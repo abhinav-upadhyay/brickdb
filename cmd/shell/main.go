@@ -38,10 +38,14 @@ import (
 func main() {
 	dbName := os.Args[1]
 	db := openDB(dbName)
+	defer db.Close()
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Printf(">")
-		scanner.Scan()
+		stopScan := scanner.Scan()
+		if stopScan {
+			break
+		}
 		cmd := scanner.Text()
 		doExit := executeCmd(db, cmd)
 		if doExit {
@@ -126,12 +130,11 @@ func executeCmd(db *index.Brickdb, cmdArgs string) bool {
 		}
 		return false
 	case "quit":
-		err := db.Close()
-		if err != nil {
-			fmt.Printf("Failed to close the db with error: %v\n", err)
-			return true
-		}
 		return true
+	default:
+		fmt.Printf("Invalid command %s\n", cmd)
+		fmt.Printf("Supported commands are: [put|get|update|delete]\n")
+		return false
 	}
 	return false
 }
