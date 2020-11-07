@@ -34,6 +34,36 @@ and write (TODO)
 	fmt.Printf("value: %s\n", val)
 ```
 
+*Delete key*
+```go
+	err := db.Delete("key1")
+	if err != nil {
+		panic(err)
+	}
+```
+
+### Using the shell
+The shell can be build using `go build cmd/shell`
+It takes the name of the database file as a parameter. If the db file exists it will open it, or it will create a new file.
+The shell supports four commands:
+
+**put**
+It inserts a new record. For example
+`> put key1 val1` 
+will insert a key1 with value val1
+
+**get**
+It prints the value of the given key:
+`> get key1`
+
+**update**
+It updates the value of an existing key:
+`> update key1 val2`
+
+**delete**
+It deletes the record for the given key
+`> delete key`
+
 ### Why the name Brickdb?
 Because it is a database built for education purpose, not tested or designed for industrial use case.
 In the embedded systems community, often it happens that screwing around with the low level software on
