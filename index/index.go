@@ -63,7 +63,7 @@ const (
 	STORE
 )
 
-type brickdb struct {
+type Brickdb struct {
 	idxFile  *os.File
 	datFile  *os.File
 	idxbuf   string
@@ -80,11 +80,11 @@ type brickdb struct {
 	nhash    uint64
 }
 
-func NewBrick() *brickdb {
-	return new(brickdb)
+func NewBrick() *Brickdb {
+	return new(Brickdb)
 }
 
-func (self *brickdb) Open(name string, mode int) error {
+func (self *Brickdb) Open(name string, mode int) error {
 	self.nhash = HASHTABLE_SIZE
 	self.hashoff = HASH_OFF
 	self.name = name
@@ -139,7 +139,7 @@ func (self *brickdb) Open(name string, mode int) error {
 	return nil
 }
 
-func (self *brickdb) Close() error {
+func (self *Brickdb) Close() error {
 	if self.idxFile != nil {
 		err := self.idxFile.Close()
 		if err != nil {
@@ -156,7 +156,7 @@ func (self *brickdb) Close() error {
 	return nil
 }
 
-func (self *brickdb) Fetch(key string) (string, error) {
+func (self *Brickdb) Fetch(key string) (string, error) {
 	_, err := self.findAndLock(key, false)
 	if err != nil {
 		return "", err
@@ -176,7 +176,7 @@ func (self *brickdb) Fetch(key string) (string, error) {
 /**
  * Find the record associated with the given key
  */
-func (self *brickdb) findAndLock(key string, isWriteLock bool) (bool, error) {
+func (self *Brickdb) findAndLock(key string, isWriteLock bool) (bool, error) {
 	/**
 	 * Calculate the hash value for the key, and then calculate the offset of
 	 * corresponding chain pointer in hash table
@@ -207,7 +207,10 @@ func (self *brickdb) findAndLock(key string, isWriteLock bool) (bool, error) {
 	}
 
 	for offset != 0 {
-		nextOffset, _ := self.readIdx(offset)
+		nextOffset, err := self.readIdx(offset)
+		if err != nil {
+			return false, err
+		}
 		if self.idxbuf == key {
 			break
 		}
@@ -221,7 +224,7 @@ func (self *brickdb) findAndLock(key string, isWriteLock bool) (bool, error) {
 	return true, nil
 }
 
-func (self *brickdb) dbHash(key string) uint64 {
+func (self *Brickdb) dbHash(key string) uint64 {
 	return xxhash.Sum64([]byte(key)) % uint64(self.nhash)
 }
 
@@ -230,7 +233,7 @@ func (self *brickdb) dbHash(key string) uint64 {
  * the free list pointer, the hash table chain pointer or an index
  * record chain pointer
  */
-func (self *brickdb) readPtr(offset int64) (int64, error) {
+func (self *Brickdb) readPtr(offset int64) (int64, error) {
 	buf := make([]byte, PTR_SZ)
 	_, err := self.idxFile.Seek(offset, io.SeekStart)
 	if err != nil {
@@ -264,7 +267,7 @@ func parseInt(s string) (int64, error) {
  * the index record into idxbuf field. We set datoff and datlen to
  * offset and length of the value in data file
  */
-func (self *brickdb) readIdx(offset int64) (int64, error) {
+func (self *Brickdb) readIdx(offset int64) (int64, error) {
 	/**
 	 * Position index file and record the offset.
 	 */
@@ -299,7 +302,7 @@ func (self *brickdb) readIdx(offset int64) (int64, error) {
 	if self.idxlen < IDXLEN_MIN || self.idxlen > IDXLEN_MAX {
 		return -1, fmt.Errorf("Invalid index record length %d", self.idxlen)
 	}
-	idxbufBytes := make([]byte, IDXLEN_MAX+1)
+	idxbufBytes := make([]byte, self.idxlen)
 
 	/* Now read the actual index record */
 	bytesRead, err = self.idxFile.Read(idxbufBytes)
@@ -310,7 +313,7 @@ func (self *brickdb) readIdx(offset int64) (int64, error) {
 		return -1, fmt.Errorf("Failed to read index record at offset %d", offset)
 	}
 
-	if !testNewLine(self.idxbuf) {
+	if !testNewLine(string(idxbufBytes)) {
 		return -1, fmt.Errorf("Corrupted index record at offset %d, not ending with new line", offset)
 	}
 	idxbufBytes = idxbufBytes[:self.idxlen-1] //ignore the newline
@@ -318,14 +321,14 @@ func (self *brickdb) readIdx(offset int64) (int64, error) {
 
 	parts := strings.Split(self.idxbuf, SEP_STR)
 	if len(parts) == 0 {
-		return -1, errors.New("Invalid index record: missing separators")
+		return -1, fmt.Errorf("Invalid index record: missing separators")
 	}
 
-	if len(parts) > 2 {
-		return -1, errors.New("Invalid index record: too many separators")
+	if len(parts) > 3 {
+		return -1, fmt.Errorf("Invalid index record: too many separators (%d)", len(parts))
 	}
 
-	self.datoff, err = parseInt(parts[0])
+	self.datoff, err = parseInt(parts[1])
 	if err != nil {
 		return -1, err
 	}
@@ -334,7 +337,7 @@ func (self *brickdb) readIdx(offset int64) (int64, error) {
 		return -1, errors.New("Starting data offset < 0")
 	}
 
-	self.datlen, err = parseInt(parts[1])
+	self.datlen, err = parseInt(parts[2])
 	if err != nil {
 		return -1, err
 	}
@@ -344,7 +347,7 @@ func (self *brickdb) readIdx(offset int64) (int64, error) {
 	return self.ptrval, nil
 }
 
-func (self *brickdb) readData() (string, error) {
+func (self *Brickdb) readData() (string, error) {
 	_, err := self.datFile.Seek(self.datoff, io.SeekStart)
 	if err != nil {
 		return "", err
@@ -366,7 +369,7 @@ func (self *brickdb) readData() (string, error) {
 	return self.datbuf, nil
 }
 
-func (self *brickdb) Delete(key string) error {
+func (self *Brickdb) Delete(key string) error {
 	found, err := self.findAndLock(key, true)
 	if err != nil {
 		return err
@@ -377,7 +380,7 @@ func (self *brickdb) Delete(key string) error {
 	return Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
 }
 
-func (self *brickdb) _delete() error {
+func (self *Brickdb) _delete() error {
 	var freeptr, saveptr int64
 	self.datbuf = strings.Repeat(" ", int(self.datlen))
 	self.idxbuf = strings.Repeat(" ", len(self.idxbuf))
@@ -397,7 +400,7 @@ func (self *brickdb) _delete() error {
 	return Unlock(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
 }
 
-func (self *brickdb) writeData(data string, offset int64, whence int) error {
+func (self *Brickdb) writeData(data string, offset int64, whence int) error {
 	// we need to lock if we are adding a new record - no need for lock for overwriting
 	if whence == io.SeekEnd {
 		err := WriteLockW(self.datFile.Fd(), 0, io.SeekStart, 0) //lock whole file
@@ -406,10 +409,11 @@ func (self *brickdb) writeData(data string, offset int64, whence int) error {
 		}
 	}
 
-	_, err := self.datFile.Seek(offset, whence)
+	newoffset, err := self.datFile.Seek(offset, whence)
 	if err != nil {
 		return err
 	}
+	self.datoff = newoffset
 
 	self.datlen = int64(len(data) + 1) // +1 for newline
 	iovecBytes := make([][]byte, 2)
@@ -425,7 +429,7 @@ func (self *brickdb) writeData(data string, offset int64, whence int) error {
 	return nil
 }
 
-func (self *brickdb) writeIdx(key string, offset int64, whence int, ptrval int64) error {
+func (self *Brickdb) writeIdx(key string, offset int64, whence int, ptrval int64) error {
 	if self.ptrval < 0 || self.ptrval > PTR_MAX {
 		return fmt.Errorf("Invalid pointer: %d", self.ptrval)
 	}
@@ -445,10 +449,11 @@ func (self *brickdb) writeIdx(key string, offset int64, whence int, ptrval int64
 		}
 	}
 
-	_, err := self.idxFile.Seek(offset, whence)
+	idxoff, err := self.idxFile.Seek(offset, whence)
 	if err != nil {
 		return err
 	}
+	self.idxoff = idxoff
 	iovecBytes := make([][]byte, 2)
 	iovecBytes[0] = []byte(indexRecPrefix)
 	iovecBytes[1] = []byte(self.idxbuf)
@@ -469,7 +474,7 @@ func (self *brickdb) writeIdx(key string, offset int64, whence int, ptrval int64
 /**
  * Write a chain pointer field in the index file
  */
-func (self *brickdb) writePtr(offset int64, ptrval int64) error {
+func (self *Brickdb) writePtr(offset int64, ptrval int64) error {
 	if ptrval < 0 || ptrval > PTR_MAX {
 		return fmt.Errorf("Invalid ptrval: %d", ptrval)
 	}
@@ -485,7 +490,7 @@ func (self *brickdb) writePtr(offset int64, ptrval int64) error {
 	return nil
 }
 
-func (self *brickdb) Store(key string, value string, op storeOp) error {
+func (self *Brickdb) Store(key string, value string, op storeOp) error {
 	keyLen := int64(len(key))
 	valueLen := int64(len(value))
 	if valueLen < DATLEN_MIN || valueLen > DATLEN_MAX {
@@ -561,7 +566,7 @@ func (self *brickdb) Store(key string, value string, op storeOp) error {
 	return Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
 }
 
-func (self *brickdb) findFree(keylen int64, datlen int64) (bool, error) {
+func (self *Brickdb) findFree(keylen int64, datlen int64) (bool, error) {
 	var offset, nextOffset, saveOffset int64
 	err := WriteLockW(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
 	if err != nil {
@@ -594,10 +599,9 @@ func testNewLine(s string) bool {
 	return lastRune == '\n'
 }
 
-func (self *brickdb) Rewind() {
+func (self *Brickdb) Rewind() {
 	offset := (self.nhash + 1) * PTR_SZ
 	self.idxFile.Seek(int64(offset), io.SeekStart)
-	//TODO fill this
 }
 
 func ReadLock(fd uintptr, offset int64, whence int16, len int64) error {
