@@ -109,6 +109,40 @@ func TestStoreMultipleRecords(t *testing.T) {
 	}
 }
 
+func TestDeleteSimple(t *testing.T) {
+	db, err := openNewDB()
+	defer removeDB(TEST_DB_NAME)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k1", "v1", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k2", "v2", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Delete("k2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	val, err := db.Fetch("k1")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "v1" {
+		t.Errorf("Expected value v1, got %s", val)
+	}
+	val, err = db.Fetch("k2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "" {
+		t.Errorf("Expected value for k2 to be deleted, found value %s", val)
+	}
+}
+
 func openNewDB() (*Brickdb, error) {
 	removeDB(TEST_DB_NAME)
 	db := NewBrick()

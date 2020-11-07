@@ -157,9 +157,12 @@ func (self *Brickdb) Close() error {
 }
 
 func (self *Brickdb) Fetch(key string) (string, error) {
-	_, err := self.findAndLock(key, false)
+	found, err := self.findAndLock(key, false)
 	if err != nil {
 		return "", err
+	}
+	if !found {
+		return "", nil
 	}
 	val, err := self.readData()
 	if err != nil {
@@ -284,10 +287,10 @@ func (self *Brickdb) readIdx(offset int64) (int64, error) {
 
 	/* Read the fixed length header in the index record */
 	ptrbuf := make([]byte, PTR_SZ)
-	idxbuf := make([]byte, IDXLEN_SZ)
+	idxLenbuf := make([]byte, IDXLEN_SZ)
 	iovecBytes := make([][]byte, 2)
 	iovecBytes[0] = ptrbuf
-	iovecBytes[1] = idxbuf
+	iovecBytes[1] = idxLenbuf
 	// iovecBytes := createIOVecArray(2, ptrbuf, idxbuf)
 	bytesRead, err := unix.Readv(int(self.idxFile.Fd()), iovecBytes)
 	if err != nil {
@@ -298,7 +301,7 @@ func (self *Brickdb) readIdx(offset int64) (int64, error) {
 		return -1, nil
 	}
 	self.ptrval, _ = parseInt(string(ptrbuf))
-	self.idxlen, _ = parseInt(string(idxbuf))
+	self.idxlen, _ = parseInt(string(idxLenbuf))
 	if self.idxlen < IDXLEN_MIN || self.idxlen > IDXLEN_MAX {
 		return -1, fmt.Errorf("Invalid index record length %d", self.idxlen)
 	}
@@ -317,9 +320,9 @@ func (self *Brickdb) readIdx(offset int64) (int64, error) {
 		return -1, fmt.Errorf("Corrupted index record at offset %d, not ending with new line", offset)
 	}
 	idxbufBytes = idxbufBytes[:self.idxlen-1] //ignore the newline
-	self.idxbuf = string(idxbufBytes)
+	idxbuf := string(idxbufBytes)
 
-	parts := strings.Split(self.idxbuf, SEP_STR)
+	parts := strings.Split(idxbuf, SEP_STR)
 	if len(parts) == 0 {
 		return -1, fmt.Errorf("Invalid index record: missing separators")
 	}
@@ -328,6 +331,7 @@ func (self *Brickdb) readIdx(offset int64) (int64, error) {
 		return -1, fmt.Errorf("Invalid index record: too many separators (%d)", len(parts))
 	}
 
+	self.idxbuf = parts[0]
 	self.datoff, err = parseInt(parts[1])
 	if err != nil {
 		return -1, err
