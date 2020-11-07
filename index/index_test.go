@@ -143,6 +143,83 @@ func TestDeleteSimple(t *testing.T) {
 	}
 }
 
+func TestDeleteMulti(t *testing.T) {
+	db, err := openNewDB()
+	defer removeDB(TEST_DB_NAME)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nrecords := 10
+	keys := make([]string, nrecords)
+	vals := make([]string, nrecords)
+	delKeys := make([]string, 4)
+	for i := 0; i < nrecords; i++ {
+		keys[i] = fmt.Sprintf("k%d", i)
+		vals[i] = fmt.Sprintf("v%d", i)
+		if i%2 == 0 {
+			delKeys = append(delKeys, keys[i])
+		}
+	}
+	for i, k := range keys {
+		err = db.Store(k, vals[i], INSERT)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for _, k := range delKeys {
+		err = db.Delete(k)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for _, k := range delKeys {
+		val, err := db.Fetch(k)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if val != "" {
+			t.Errorf("Expected value for key %s to be deleted, found value %s returned", k, val)
+		}
+	}
+
+}
+
+func TestInsertDeleteInsertFetch(t *testing.T) {
+	db, err := openNewDB()
+	// defer removeDB(TEST_DB_NAME)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k1", "v1", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k2", "v2", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Delete("k2")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = db.Store("k2", "v3", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	val, err := db.Fetch("k2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "v3" {
+		t.Errorf("Expected value v3 for key k2, got %s", val)
+	}
+
+}
+
 func openNewDB() (*Brickdb, error) {
 	removeDB(TEST_DB_NAME)
 	db := NewBrick()
