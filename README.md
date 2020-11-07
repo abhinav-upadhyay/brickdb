@@ -42,6 +42,14 @@ and write (TODO)
 	}
 ```
 
+*Update key*
+```go
+	err := db.Update("key1", "newval")
+	if err != nil {
+		panic(err)
+	}
+```
+
 ### Using the shell
 The shell can be build using `go build cmd/shell`
 It takes the name of the database file as a parameter. If the db file exists it will open it, or it will create a new file.
