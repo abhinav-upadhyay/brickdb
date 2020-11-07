@@ -42,10 +42,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
 		fmt.Printf(">")
-		stopScan := scanner.Scan()
-		if stopScan {
-			break
-		}
+		scanner.Scan()
 		cmd := scanner.Text()
 		doExit := executeCmd(db, cmd)
 		if doExit {
