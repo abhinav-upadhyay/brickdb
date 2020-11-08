@@ -51,30 +51,42 @@ and write (TODO)
 ```
 
 ### Using the shell
-The shell can be build using `go build cmd/shell`
+The shell can be built using `go build cmd/shell`
 It takes the name of the database file as a parameter. If the db file exists it will open it, or it will create a new file.
 The shell supports four commands:
 
 **put**
+
 It inserts a new record. For example
 `> put key1 val1` 
 will insert a key1 with value val1
 
 **get**
+
 It prints the value of the given key:
 `> get key1`
 
 **update**
+
 It updates the value of an existing key:
 `> update key1 val2`
 
 **delete**
+
 It deletes the record for the given key
 `> delete key`
 
 ### Why the name Brickdb?
-Because it is a database built for education purpose, not tested or designed for industrial use case.
+Because it is a database built for education and learning purposes, not tested or designed for industrial use case.
 In the embedded systems community, often it happens that screwing around with the low level software on
-the device can make the device unusable, which is referred to as `bricking the device' because the device
+the device can make the device unusable, which is referred to as `bricking the device` because the device
 is no better than a piece of brick after that. In the same vein using an ametuer piece of software such as this
-can brick your data, thus brickdb :) 
+can brick your data, thus brickdb :)
+
+### Future Work
+Following are the list of things I've in mind to implement in near future
+- **Support for multiplc columns** - right now only a single string value can be stored for a key, but can we extend the storage format to support storing multiple column values for a given key, the way it is in most of the RDBMS and columnar databases.
+- **Support for more datatypes** - Right now key and values are expected to be strings, can we support more types natively?
+- **Support for multiple tables per database** - Right now one database is a flat store of key-values, can we provide an abstraction layer and support multple tables
+- **Query Language** - Once we have multiple tables support, it would be interesting to implement a SQL like query language
+- **Multiple index formats** - Right now only hash indexing is implemented. Implementing btree and LSM indexing would be nice
