@@ -49,6 +49,9 @@ and write (TODO)
 		panic(err)
 	}
 ```
+### Cautions to be taken when using with goroutines
+The database uses the posix byte range locking to support concurrent reads and writes. The Brickdb object maintains state internally to operate which makes it difficult to share the same object with multiple goroutines as the state will get corrupted, possibly leading to a deadlock. The solution is to let each goroutine obtain its own handle to the database by calling `NewBrickdb()`.
+
 
 ### Using the shell
 The shell can be built using `go build cmd/shell`
