@@ -33,7 +33,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"syscall"
 	"unicode/utf8"
 
 	"github.com/cespare/xxhash"
@@ -108,6 +107,9 @@ func (self *Brickdb) Open(name string, mode int) error {
 		if WriteLockW(self.idxFile.Fd(), 0, io.SeekStart, 0) != nil {
 			return errors.New("Failed to write lock index for init")
 		}
+		defer func() error {
+			return Unlock(self.idxFile.Fd(), 0, io.SeekStart, 0)
+		}()
 
 		idxFileInfo, err := self.idxFile.Stat()
 		if err != nil {
@@ -131,9 +133,6 @@ func (self *Brickdb) Open(name string, mode int) error {
 			}
 		}
 
-		if Unlock(self.idxFile.Fd(), 0, io.SeekStart, 0) != nil {
-			return errors.New("index file unlock failed")
-		}
 	}
 	self.Rewind()
 	return nil
@@ -158,6 +157,7 @@ func (self *Brickdb) Close() error {
 
 func (self *Brickdb) Fetch(key string) (string, error) {
 	found, err := self.findAndLock(key, false)
+	defer Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
 	if err != nil {
 		return "", err
 	}
@@ -165,11 +165,6 @@ func (self *Brickdb) Fetch(key string) (string, error) {
 		return "", nil
 	}
 	val, err := self.readData()
-	if err != nil {
-		return "", err
-	}
-
-	err = Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
 	if err != nil {
 		return "", err
 	}
@@ -378,30 +373,41 @@ func (self *Brickdb) Delete(key string) error {
 	if err != nil {
 		return err
 	}
+	defer func() error {
+		return Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
+	}()
 	if found {
-		self._delete()
+		return self._delete()
 	}
-	return Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
+	return nil
 }
 
 func (self *Brickdb) _delete() error {
 	var freeptr, saveptr int64
-	self.datbuf = strings.Repeat(" ", int(self.datlen))
+	self.datbuf = strings.Repeat(" ", len(self.datbuf))
 	self.idxbuf = strings.Repeat(" ", len(self.idxbuf))
 	err := WriteLockW(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
 	if err != nil {
 		return err
 	}
+	defer func() error {
+		return Unlock(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
+	}()
 	self.writeData(self.datbuf, self.datoff, io.SeekStart)
 	freeptr, err = self.readPtr(FREE_OFF)
 	if err != nil {
 		return err
 	}
 	saveptr = self.ptrval
-	self.writeIdx(self.idxbuf, self.idxoff, io.SeekStart, freeptr)
-	self.writePtr(FREE_OFF, self.idxoff)
-	self.writePtr(self.ptroff, saveptr)
-	return Unlock(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
+	err = self.writeIdx(self.idxbuf, self.idxoff, io.SeekStart, freeptr)
+	if err != nil {
+		return err
+	}
+	err = self.writePtr(FREE_OFF, self.idxoff)
+	if err != nil {
+		return err
+	}
+	return self.writePtr(self.ptroff, saveptr)
 }
 
 func (self *Brickdb) writeData(data string, offset int64, whence int) error {
@@ -411,6 +417,9 @@ func (self *Brickdb) writeData(data string, offset int64, whence int) error {
 		if err != nil {
 			return err
 		}
+		defer func() error {
+			return Unlock(self.datFile.Fd(), 0, io.SeekStart, 0)
+		}()
 	}
 
 	newoffset, err := self.datFile.Seek(offset, whence)
@@ -424,13 +433,7 @@ func (self *Brickdb) writeData(data string, offset int64, whence int) error {
 	iovecBytes[0] = []byte(data)
 	iovecBytes[1] = []byte("\n")
 	_, err = unix.Writev(int(self.datFile.Fd()), iovecBytes)
-	if err != nil {
-		return err
-	}
-	if whence == io.SeekEnd {
-		return Unlock(self.datFile.Fd(), 0, io.SeekStart, 0)
-	}
-	return nil
+	return err
 }
 
 func (self *Brickdb) writeIdx(key string, offset int64, whence int, ptrval int64) error {
@@ -451,6 +454,9 @@ func (self *Brickdb) writeIdx(key string, offset int64, whence int, ptrval int64
 		if err != nil {
 			return err
 		}
+		defer func() error {
+			return Unlock(self.idxFile.Fd(), (int64(self.nhash+1)*PTR_SZ)+1, io.SeekStart, 0)
+		}()
 	}
 
 	idxoff, err := self.idxFile.Seek(offset, whence)
@@ -469,9 +475,6 @@ func (self *Brickdb) writeIdx(key string, offset int64, whence int, ptrval int64
 		return errors.New("Error while writing index record")
 	}
 
-	if whence == io.SeekEnd {
-		return Unlock(self.idxFile.Fd(), (int64(self.nhash+1)*PTR_SZ)+1, io.SeekStart, 0)
-	}
 	return nil
 }
 
@@ -502,6 +505,9 @@ func (self *Brickdb) Store(key string, value string, op storeOp) error {
 	}
 
 	found, err := self.findAndLock(key, true)
+	defer func() error {
+		return Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
+	}()
 	if err != nil {
 		return err
 	}
@@ -566,8 +572,7 @@ func (self *Brickdb) Store(key string, value string, op storeOp) error {
 			self.writeData(value, self.datoff, io.SeekStart)
 		}
 	}
-
-	return Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
+	return nil
 }
 
 func (self *Brickdb) findFree(keylen int64, datlen int64) (bool, error) {
@@ -576,6 +581,7 @@ func (self *Brickdb) findFree(keylen int64, datlen int64) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer Unlock(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
 	saveOffset = FREE_OFF
 	offset, err = self.readPtr(saveOffset)
 	found := false
@@ -592,9 +598,7 @@ func (self *Brickdb) findFree(keylen int64, datlen int64) (bool, error) {
 		self.writePtr(saveOffset, self.ptrval)
 		found = true
 	}
-
-	err = Unlock(self.idxFile.Fd(), FREE_OFF, io.SeekStart, 1)
-	return found, err
+	return found, nil
 }
 
 func testNewLine(s string) bool {
@@ -609,30 +613,30 @@ func (self *Brickdb) Rewind() {
 }
 
 func ReadLock(fd uintptr, offset int64, whence int16, len int64) error {
-	return getLock(fd, syscall.F_SETLK, syscall.F_RDLCK, offset, whence, len)
+	return getLock(fd, unix.F_OFD_SETLK, unix.F_RDLCK, offset, whence, len)
 }
 
 func ReadLockW(fd uintptr, offset int64, whence int16, len int64) error {
-	return getLock(fd, syscall.F_SETLKW, syscall.F_RDLCK, offset, whence, len)
+	return getLock(fd, unix.F_OFD_SETLKW, unix.F_RDLCK, offset, whence, len)
 }
 
 func WriteLock(fd uintptr, offset int64, whence int16, len int64) error {
-	return getLock(fd, syscall.F_SETLK, syscall.F_WRLCK, offset, whence, len)
+	return getLock(fd, unix.F_OFD_SETLK, unix.F_WRLCK, offset, whence, len)
 }
 
 func WriteLockW(fd uintptr, offset int64, whence int16, len int64) error {
-	return getLock(fd, syscall.F_SETLKW, syscall.F_WRLCK, offset, whence, len)
+	return getLock(fd, unix.F_OFD_SETLKW, unix.F_WRLCK, offset, whence, len)
 }
 
 func Unlock(fd uintptr, offset int64, whence int16, len int64) error {
-	return getLock(fd, syscall.F_SETLK, syscall.F_UNLCK, offset, whence, len)
+	return getLock(fd, unix.F_OFD_SETLK, unix.F_UNLCK, offset, whence, len)
 }
 
 func getLock(fd uintptr, cmd int, lockType int16, offset int64, whence int16, len int64) error {
-	var lock *syscall.Flock_t = new(syscall.Flock_t)
+	var lock *unix.Flock_t = new(unix.Flock_t)
 	lock.Type = lockType
 	lock.Whence = whence
 	lock.Start = offset
 	lock.Len = len
-	return syscall.FcntlFlock(fd, cmd, lock)
+	return unix.FcntlFlock(fd, cmd, lock)
 }
