@@ -28,7 +28,12 @@ package index
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"os/signal"
+	"runtime"
+	"sync"
+	"syscall"
 	"testing"
 )
 
@@ -38,7 +43,7 @@ const (
 )
 
 func TestCreateDB(t *testing.T) {
-	_, err := openNewDB()
+	_, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -61,7 +66,7 @@ func TestCreateDB(t *testing.T) {
 }
 
 func TestStoreOneRecord(t *testing.T) {
-	db, err := openNewDB()
+	db, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -80,7 +85,7 @@ func TestStoreOneRecord(t *testing.T) {
 }
 
 func TestStoreMultipleRecords(t *testing.T) {
-	db, err := openNewDB()
+	db, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -110,7 +115,7 @@ func TestStoreMultipleRecords(t *testing.T) {
 }
 
 func TestDeleteSimple(t *testing.T) {
-	db, err := openNewDB()
+	db, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -144,7 +149,7 @@ func TestDeleteSimple(t *testing.T) {
 }
 
 func TestDeleteMulti(t *testing.T) {
-	db, err := openNewDB()
+	db, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -187,8 +192,8 @@ func TestDeleteMulti(t *testing.T) {
 }
 
 func TestInsertDeleteInsertFetch(t *testing.T) {
-	db, err := openNewDB()
-	// defer removeDB(TEST_DB_NAME)
+	db, err := openNewDB(true)
+	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -220,8 +225,8 @@ func TestInsertDeleteInsertFetch(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	db, err := openNewDB()
-	// defer removeDB(TEST_DB_NAME)
+	db, err := openNewDB(true)
+	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -248,8 +253,87 @@ func TestUpdate(t *testing.T) {
 
 }
 
-func openNewDB() (*Brickdb, error) {
-	removeDB(TEST_DB_NAME)
+func TestConcurrentReadWrite(t *testing.T) {
+	go func() {
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGQUIT)
+		buf := make([]byte, 1<<20)
+		for {
+			<-sigs
+			stacklen := runtime.Stack(buf, true)
+			log.Printf("=== received SIGQUIT ===\n*** goroutine dump...\n%s\n*** end\n", buf[:stacklen])
+		}
+	}()
+	var wg sync.WaitGroup
+	openNewDB(true)
+	// defer removeDB(TEST_DB_NAME)
+	nrecords := 10000
+	keys := make([]string, nrecords)
+	vals := make([]string, nrecords)
+	for i := 0; i < nrecords; i++ {
+		keys[i] = fmt.Sprintf("key_%d", i)
+		vals[i] = fmt.Sprintf("val_%d", i)
+	}
+	nthreads := 20
+	step := 500
+	for i := 0; i < nthreads; i++ {
+		wg.Add(1)
+		start := i * step
+		end := start + step
+		fmt.Printf("%d-%d\n", start, end)
+		go work(t, &wg, keys[start:end], vals[start:end])
+	}
+	wg.Wait()
+}
+
+func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
+	defer wg.Done()
+	fmt.Printf("working with keys %v\n", keys)
+	db, err := openNewDB(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	for i, k := range keys {
+		err := db.Store(k, vals[i], INSERT)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for i, k := range keys {
+		val, err := db.Fetch(k)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if val != vals[i] {
+			t.Errorf("Expected value %s for key %s, got %s", vals[i], k, val)
+		}
+	}
+
+	for _, k := range keys {
+		fmt.Printf("Deleting key %s\n", k)
+		err := db.Delete(k)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	for _, k := range keys {
+		val, err := db.Fetch(k)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if val != "" {
+			t.Errorf("Expected key %s to be deleted, found value %s", k, val)
+		}
+	}
+}
+
+func openNewDB(removeExisting bool) (*Brickdb, error) {
+	if removeExisting {
+		removeDB(TEST_DB_NAME)
+	}
 	db := NewBrick()
 	err := db.Open(TEST_DB_NAME, os.O_RDWR|os.O_CREATE)
 	return db, err
