@@ -93,3 +93,4 @@ Following are the list of things I've in mind to implement in near future
 - **Support for multiple tables per database** - Right now one database is a flat store of key-values, can we provide an abstraction layer and support multple tables
 - **Query Language** - Once we have multiple tables support, it would be interesting to implement a SQL like query language
 - **Multiple index formats** - Right now only hash indexing is implemented. Implementing btree and LSM indexing would be nice
+- **Reduce overhead of locking** - The locking mechanism currently uses the `fcntl` system call, which has high overhead. Can we replace it with a lightweight mechanism?
