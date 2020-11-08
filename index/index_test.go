@@ -217,6 +217,34 @@ func TestInsertDeleteInsertFetch(t *testing.T) {
 	if val != "v3" {
 		t.Errorf("Expected value v3 for key k2, got %s", val)
 	}
+}
+
+func TestUpdate(t *testing.T) {
+	db, err := openNewDB()
+	// defer removeDB(TEST_DB_NAME)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k1", "v1", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k2", "v2", INSERT)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = db.Store("k2", "v3", STORE)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	val, err := db.Fetch("k2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if val != "v3" {
+		t.Errorf("Expected value v3 for key k2, got %s", val)
+	}
 
 }
 
