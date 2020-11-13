@@ -5,16 +5,21 @@ import (
 	"os"
 
 	"github.com/abhinav-upadhyay/brickdb/index"
+	brickdb "github.com/abhinav-upadhyay/brickdb/pkg/brickdb"
 )
 
 func main() {
-	db := index.NewBrick()
-	db.Open("testdb", os.O_RDWR|os.O_CREATE)
-	err := db.Store("key1", "val1", index.INSERT)
+	db := brickdb.New("testdb")
+	err := db.Create(index.HashIndexType)
 	if err != nil {
 		panic(err)
 	}
-	err = db.Store("key2", "val2", index.INSERT)
+	db.Open(os.O_RDWR)
+	err = db.Store("key1", "val1", brickdb.Insert)
+	if err != nil {
+		panic(err)
+	}
+	err = db.Store("key2", "val2", brickdb.Insert)
 	if err != nil {
 		panic(err)
 	}

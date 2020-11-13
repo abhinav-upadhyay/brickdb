@@ -33,6 +33,7 @@ import (
 	"strings"
 
 	"github.com/abhinav-upadhyay/brickdb/index"
+	"github.com/abhinav-upadhyay/brickdb/pkg/brickdb"
 )
 
 func main() {
@@ -51,7 +52,7 @@ func main() {
 	}
 }
 
-func openDB(name string) *index.Brickdb {
+func openDB(name string) *brickdb.Brickdb {
 	finfo, err := os.Stat(name)
 	exists := false
 	if os.IsNotExist(err) {
@@ -60,16 +61,16 @@ func openDB(name string) *index.Brickdb {
 	if exists {
 		exists = !finfo.IsDir()
 	}
-	db := index.NewBrick()
+	db := brickdb.New(name)
 	if exists {
-		db.Open(name, os.O_RDWR)
+		db.Open(os.O_RDWR)
 	} else {
-		db.Open(name, os.O_RDWR|os.O_CREATE)
+		db.Create(index.HashIndexType)
 	}
 	return db
 }
 
-func executeCmd(db *index.Brickdb, cmdArgs string) bool {
+func executeCmd(db *brickdb.Brickdb, cmdArgs string) bool {
 	args := strings.Split(cmdArgs, " ")
 	cmd := args[0]
 	switch cmd {
@@ -80,7 +81,7 @@ func executeCmd(db *index.Brickdb, cmdArgs string) bool {
 		}
 		key := args[1]
 		val := args[2]
-		err := db.Store(key, val, index.INSERT)
+		err := db.Store(key, val, brickdb.Insert)
 		if err != nil {
 			fmt.Printf("Failed to insert key %s with value %s due to error %v\n", key, val, err)
 			return false
@@ -92,7 +93,7 @@ func executeCmd(db *index.Brickdb, cmdArgs string) bool {
 		}
 		key := args[1]
 		val := args[2]
-		err := db.Store(key, val, index.STORE)
+		err := db.Store(key, val, brickdb.Update)
 		if err != nil {
 			fmt.Printf("Failed to update key %s with value %s due to error %v\n", key, val, err)
 			return false

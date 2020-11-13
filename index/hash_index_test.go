@@ -42,7 +42,7 @@ const (
 	TEST_DB_NAME          = "index_test"
 )
 
-func TestCreateDB(t *testing.T) {
+func TestCreateIndex(t *testing.T) {
 	_, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
@@ -66,16 +66,16 @@ func TestCreateDB(t *testing.T) {
 }
 
 func TestStoreOneRecord(t *testing.T) {
-	db, err := openNewDB(true)
+	hashIndex, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k1", "v1", INSERT)
+	err = hashIndex.Insert("k1", "v1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	val, err := db.Fetch("k1")
+	val, err := hashIndex.Fetch("k1")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -85,7 +85,7 @@ func TestStoreOneRecord(t *testing.T) {
 }
 
 func TestStoreMultipleRecords(t *testing.T) {
-	db, err := openNewDB(true)
+	hashIndex, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -98,13 +98,13 @@ func TestStoreMultipleRecords(t *testing.T) {
 		vals[i] = fmt.Sprintf("v%d", i)
 	}
 	for i, k := range keys {
-		err = db.Store(k, vals[i], INSERT)
+		err = hashIndex.Insert(k, vals[i])
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 	for i, k := range keys {
-		val, err := db.Fetch(k)
+		val, err := hashIndex.Fetch(k)
 		if err != nil {
 			t.Fatal(k)
 		}
@@ -115,31 +115,31 @@ func TestStoreMultipleRecords(t *testing.T) {
 }
 
 func TestDeleteSimple(t *testing.T) {
-	db, err := openNewDB(true)
+	hashIndex, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k1", "v1", INSERT)
+	err = hashIndex.Insert("k1", "v1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k2", "v2", INSERT)
+	err = hashIndex.Insert("k2", "v2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Delete("k2")
+	err = hashIndex.Delete("k2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	val, err := db.Fetch("k1")
+	val, err := hashIndex.Fetch("k1")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if val != "v1" {
 		t.Errorf("Expected value v1, got %s", val)
 	}
-	val, err = db.Fetch("k2")
+	val, err = hashIndex.Fetch("k2")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -149,7 +149,7 @@ func TestDeleteSimple(t *testing.T) {
 }
 
 func TestDeleteMulti(t *testing.T) {
-	db, err := openNewDB(true)
+	hashIndex, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -166,21 +166,21 @@ func TestDeleteMulti(t *testing.T) {
 		}
 	}
 	for i, k := range keys {
-		err = db.Store(k, vals[i], INSERT)
+		err = hashIndex.Insert(k, vals[i])
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	for _, k := range delKeys {
-		err = db.Delete(k)
+		err = hashIndex.Delete(k)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	for _, k := range delKeys {
-		val, err := db.Fetch(k)
+		val, err := hashIndex.Fetch(k)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -192,30 +192,30 @@ func TestDeleteMulti(t *testing.T) {
 }
 
 func TestInsertDeleteInsertFetch(t *testing.T) {
-	db, err := openNewDB(true)
+	hashIndex, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k1", "v1", INSERT)
+	err = hashIndex.Insert("k1", "v1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k2", "v2", INSERT)
+	err = hashIndex.Insert("k2", "v2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Delete("k2")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = db.Store("k2", "v3", INSERT)
+	err = hashIndex.Delete("k2")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	val, err := db.Fetch("k2")
+	err = hashIndex.Insert("k2", "v3")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	val, err := hashIndex.Fetch("k2")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -225,25 +225,25 @@ func TestInsertDeleteInsertFetch(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	db, err := openNewDB(true)
+	hashIndex, err := openNewDB(true)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k1", "v1", INSERT)
+	err = hashIndex.Insert("k1", "v1")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k2", "v2", INSERT)
+	err = hashIndex.Insert("k2", "v2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = db.Store("k2", "v3", STORE)
+	err = hashIndex.Update("k2", "v3")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	val, err := db.Fetch("k2")
+	val, err := hashIndex.Fetch("k2")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -254,6 +254,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestConcurrentReadWrite(t *testing.T) {
+	fmt.Printf("Testing concurrent read/write")
 	go func() {
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGQUIT)
@@ -289,20 +290,20 @@ func TestConcurrentReadWrite(t *testing.T) {
 func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 	defer wg.Done()
 	fmt.Printf("working with keys %v\n", keys)
-	db, err := openNewDB(false)
+	hashIndex, err := openNewDB(false)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer hashIndex.Close()
 	for i, k := range keys {
-		err := db.Store(k, vals[i], INSERT)
+		err := hashIndex.Insert(k, vals[i])
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	for i, k := range keys {
-		val, err := db.Fetch(k)
+		val, err := hashIndex.Fetch(k)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -313,14 +314,14 @@ func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 
 	for _, k := range keys {
 		fmt.Printf("Deleting key %s\n", k)
-		err := db.Delete(k)
+		err := hashIndex.Delete(k)
 		if err != nil {
 			t.Fatal(err)
 		}
 	}
 
 	for _, k := range keys {
-		val, err := db.Fetch(k)
+		val, err := hashIndex.Fetch(k)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -330,13 +331,13 @@ func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 	}
 }
 
-func openNewDB(removeExisting bool) (*Brickdb, error) {
+func openNewDB(removeExisting bool) (*HashIndex, error) {
 	if removeExisting {
 		removeDB(TEST_DB_NAME)
 	}
-	db := NewBrick()
-	err := db.Open(TEST_DB_NAME, os.O_RDWR|os.O_CREATE)
-	return db, err
+	hashIndex := new(HashIndex)
+	err := hashIndex.Open(TEST_DB_NAME, os.O_RDWR|os.O_CREATE)
+	return hashIndex, err
 }
 
 func removeDB(name string) {
