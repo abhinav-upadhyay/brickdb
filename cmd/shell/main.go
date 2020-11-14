@@ -104,6 +104,17 @@ func executeCmd(db *brickdb.Brickdb, cmdArgs string) bool {
 			return false
 		}
 		key := args[1]
+		if key == "*" {
+			vals, err := db.FetchAll()
+			if err != nil {
+				fmt.Printf("Failed to get all recrods due to error %v\n", err)
+				return false
+			}
+			for key, value := range vals {
+				fmt.Printf("%s: %s\n", key, value)
+			}
+			return false
+		}
 		val, err := db.Fetch(key)
 		if err != nil {
 			fmt.Printf("Failed to get key %s, due to error %v\n", key, err)

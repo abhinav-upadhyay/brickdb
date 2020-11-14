@@ -331,6 +331,43 @@ func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 	}
 }
 
+func TestFetchAll(t *testing.T) {
+	hashIndex, err := openNewDB(true)
+	defer removeDB(TEST_DB_NAME)
+	if err != nil {
+		t.Fatal(err)
+	}
+	nrecords := 100
+	keys := make([]string, nrecords)
+	vals := make([]string, nrecords)
+	for i := 0; i < nrecords; i++ {
+		keys[i] = fmt.Sprintf("k%d", i)
+		vals[i] = fmt.Sprintf("v%d", i)
+	}
+	for i, k := range keys {
+		err = hashIndex.Insert(k, vals[i])
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	valuesMap, err := hashIndex.FetchAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(valuesMap) != nrecords {
+		t.Errorf("Expected to read %d records, read %d records", nrecords, len(valuesMap))
+	}
+	for i := 0; i < nrecords; i++ {
+		v, ok := valuesMap[keys[i]]
+		if !ok {
+			t.Errorf("No value found for key %s", keys[i])
+		}
+		if v != vals[i] {
+			t.Errorf("value for key %s expected to be %s, found %s", keys[i], vals[i], v)
+		}
+	}
+}
+
 func openNewDB(removeExisting bool) (*HashIndex, error) {
 	if removeExisting {
 		removeDB(TEST_DB_NAME)

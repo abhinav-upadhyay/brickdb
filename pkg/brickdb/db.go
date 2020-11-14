@@ -99,3 +99,7 @@ func (self *Brickdb) Store(key string, value string, storeOp StoreOp) error {
 		return fmt.Errorf("Unsupported storeOp value: %v", storeOp)
 	}
 }
+
+func (self *Brickdb) FetchAll() (map[string]string, error) {
+	return self.index.FetchAll()
+}

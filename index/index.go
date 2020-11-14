@@ -36,6 +36,7 @@ type BrickIndex interface {
 	Open(name string, mode int) error
 	Close() error
 	Fetch(key string) (string, error)
+	FetchAll() (map[string]string, error)
 	Delete(key string) error
 	Insert(key string, value string) error
 	Update(key string, value string) error

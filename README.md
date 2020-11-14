@@ -13,13 +13,19 @@ and write (TODO)
 
 *Create database*
 ```go
-	db := index.NewBrick()
-	db.Open("testdb", os.O_RDWR|os.O_CREATE)
+	db := brickdb.New(name)
+	db.Create(index.HashIndexType) //only HashIndexType is supported right now
+```
+
+*Open existing database*
+```go
+	db := brickdb.New(name)
+	db.Open(os.O_RDWR) //only HashIndexType is supported right now
 ```
 
 *Insert record*
 ```go
-	err := db.Store("key1", "val1", index.INSERT)
+	err := db.Store("key1", "val1", brickdb.Insert)
 	if err != nil {
 		panic(err)
 	}
@@ -44,10 +50,22 @@ and write (TODO)
 
 *Update key*
 ```go
-	err := db.Update("key1", "newval")
+	err := db.Store("key1", "newval", brickdb.Update)
 	if err != nil {
 		panic(err)
 	}
+```
+
+*Fetch all records*
+```go
+	valuesMap, err := db.Fetch("key1")
+	if err != nil {
+		panic(err)
+	}
+	for key, val := range valuesMap {
+		fmt.Printf("key: %s, value: %s\n", key, val)
+	}
+
 ```
 ### Cautions to be taken when using with goroutines
 The database uses the posix byte range locking to support concurrent reads and writes. The Brickdb object maintains state internally to operate which makes it difficult to share the same object with multiple goroutines as the state will get corrupted, possibly leading to a deadlock. The solution is to let each goroutine obtain its own handle to the database by calling `NewBrickdb()`.
@@ -68,6 +86,9 @@ will insert a key1 with value val1
 
 It prints the value of the given key:
 `> get key1`
+
+**get all key values**
+`> get *`
 
 **update**
 

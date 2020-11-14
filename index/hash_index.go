@@ -151,6 +151,52 @@ func (self *HashIndex) Close() error {
 	return nil
 }
 
+func (self *HashIndex) FetchAll() (map[string]string, error) {
+	records := make(map[string]string)
+	var i uint64
+	var startOff int64 = FREE_OFF
+	for i = 0; i < self.nhash; i++ {
+		startOff += PTR_SZ
+		err := ReadLockW(self.idxFile.Fd(), startOff, io.SeekStart, 1)
+		if err != nil {
+			return nil, err
+		}
+		offset, err := self.readPtr(startOff)
+		if err != nil {
+			Unlock(self.idxFile.Fd(), startOff, io.SeekStart, 1)
+			return nil, err
+		}
+		if offset == 0 {
+			Unlock(self.idxFile.Fd(), startOff, io.SeekStart, 1)
+			continue
+		}
+		for {
+			nextOffset, err := self.readIdx(offset)
+			if err != nil {
+				Unlock(self.idxFile.Fd(), startOff, io.SeekStart, 1)
+				return nil, err
+			}
+			val, err := self.readData()
+			if err != nil {
+				Unlock(self.idxFile.Fd(), startOff, io.SeekStart, 1)
+				return nil, err
+			}
+			records[self.idxbuf] = val
+			if nextOffset != 0 {
+				offset = nextOffset
+			} else {
+				err = Unlock(self.idxFile.Fd(), startOff, io.SeekStart, 1)
+				if err != nil {
+					return nil, err
+				}
+				break
+			}
+		}
+	}
+	return records, nil
+
+}
+
 func (self *HashIndex) Fetch(key string) (string, error) {
 	found, err := self.findAndLock(key, false)
 	defer Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
