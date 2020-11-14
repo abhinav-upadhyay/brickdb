@@ -88,6 +88,7 @@ It prints the value of the given key:
 `> get key1`
 
 **get all key values**
+
 `> get *`
 
 **update**
