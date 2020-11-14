@@ -111,7 +111,7 @@ can brick your data, thus brickdb :)
 
 ### Future Work
 Following are the list of things I've in mind to implement in near future
-- **Support for multiplc columns** - right now only a single string value can be stored for a key, but can we extend the storage format to support storing multiple column values for a given key, the way it is in most of the RDBMS and columnar databases.
+- **Support for multiple columns** - right now only a single string value can be stored for a key, but can we extend the storage format to support storing multiple column values for a given key, the way it is in most of the RDBMS and columnar databases.
 - **Support for more datatypes** - Right now key and values are expected to be strings, can we support more types natively?
 - **Support for multiple tables per database** - Right now one database is a flat store of key-values, can we provide an abstraction layer and support multple tables
 - **Query Language** - Once we have multiple tables support, it would be interesting to implement a SQL like query language
