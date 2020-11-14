@@ -1,5 +1,6 @@
 # brickdb
-A simple concurrent hash index based key-value store in go.
+A simple concurrent hash index based key-value store in go. It is very much inspired from the Berkley DB which originated in the BSD operating systems but provides concurrency safe access methods using byte-range locking facilities as shown by Richard Stevens in `Advanced Programming in Unix Environment`
+
 
 ### Features and Limitations
 - Concurrent - It uses byte-range locking to allow multiple readers and writers at the same time to the database
