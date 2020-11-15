@@ -22,7 +22,7 @@ and write (TODO)
 *Open existing database*
 ```go
 	db := brickdb.New(name)
-	db.Open(os.O_RDWR) //only HashIndexType is supported right now
+	db.Open(os.O_RDWR) //can also use os.O_RDONLY for read only access
 ```
 
 *Insert record*
