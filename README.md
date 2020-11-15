@@ -104,11 +104,7 @@ It deletes the record for the given key
 `> delete key`
 
 ### Why the name Brickdb?
-Because it is a database built for education and learning purposes, not tested or designed for industrial use case.
-In the embedded systems community, often it happens that screwing around with the low level software on
-the device can make the device unusable, which is referred to as `bricking the device` because the device
-is no better than a piece of brick after that. In the same vein using an ametuer piece of software such as this
-can brick your data, thus brickdb :)
+Brickdb may be a reference to the verb [brick](https://en.wikipedia.org/wiki/Brick_(electronics)) which means corrupting something to the point of being euqivalent to a brick, or it may be a reference to the character Brick from the movie Anchorman. In other words the database does not gurantee any sort of usefulness :-)
 
 ### Future Work
 Following are the list of things I've in mind to implement in near future
