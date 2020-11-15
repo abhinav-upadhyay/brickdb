@@ -8,6 +8,7 @@ A simple concurrent hash index based key-value store in go. It is very much insp
 - Hash index based - It uses a hash table to index the data. Currently it uses a fixed size static table, which
 means with as the number of keys grow, access will get slower. A dynamic hash table can make it a constant time read
 and write (TODO)
+- Ordered Access - Since the only supported index format is hash table based, there is no mechanism to access the keys in sorted order.
 - Query Engine - There is no query engine implemented yet. There are functions available in the library to query data though.
 
 ### Usage
@@ -111,6 +112,7 @@ can brick your data, thus brickdb :)
 
 ### Future Work
 Following are the list of things I've in mind to implement in near future
+- **Linear Hashing** - Replace the fixed size hash index with a [linear hash index](https://en.wikipedia.org/wiki/Linear_hashing)
 - **Support for multiple columns** - right now only a single string value can be stored for a key, but can we extend the storage format to support storing multiple column values for a given key, the way it is in most of the RDBMS and columnar databases.
 - **Support for more datatypes** - Right now key and values are expected to be strings, can we support more types natively?
 - **Support for multiple tables per database** - Right now one database is a flat store of key-values, can we provide an abstraction layer and support multple tables
