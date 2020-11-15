@@ -118,3 +118,4 @@ Following are the list of things I've in mind to implement in near future
 - **Multiple index formats** - Right now only hash indexing is implemented. Implementing btree and LSM indexing would be nice
 - **Reduce overhead of locking** - The locking mechanism currently uses the `fcntl` system call, which has high overhead. Can we replace it with a lightweight mechanism?
 - **Caching** - Can caching be implemented while keeping the database concurrent? Right now it is using the `readv`/`writev` system calls which are unbufferred and that works well for concurrency. Adding caching would require making sure that cache is valid and some other thread/process has not modified the cached data.
+One possibility is to use shared memory.
