@@ -1,0 +1,695 @@
+=== RUN   TestConcurrentReadWrite
+working with keys [key_14 key_15 key_16 key_17 key_18 key_19 key_20]
+[22] read header with nhash:2, s:0, i:1, nrecords:0
+Inserting key key_14
+[22] inserting key key_14
+[22] read header with nhash:2, s:0, i:1, nrecords:0
+[22] hash for key key_14 is 16752845472010129638, i=1
+[22] 1- bucket for key_14 is 0
+[22] Inserting/deleting key key_14 into bucket 0
+[22] writing ptr 1 at offset 71
+working with keys [key_0 key_1 key_2 key_3 key_4 key_5 key_6]
+working with keys [key_7 key_8 key_9 key_10 key_11 key_12 key_13]
+[22] insert done
+[22] oldnhash: 2, new nhash: 2
+[22] writing header   1                   2                   0                   1
+Inserting key key_15
+[22] inserting key key_15
+[22] read header with nhash:2, s:0, i:1, nrecords:1
+[22] hash for key key_15 is 14484708535144924784, i=1
+[22] 1- bucket for key_15 is 0
+[22] Inserting/deleting key key_15 into bucket 0
+[22] writing ptr 23 at offset 71
+[22] insert done
+[22] oldnhash: 2, new nhash: 2
+[22] Splitting bucket 0
+[22] hash for key key_15 is 14484708535144924784, i=2
+[22] 1- bucket for key_15 is 0
+[22] hash for key key_14 is 16752845472010129638, i=2
+[22] 1- bucket for key_14 is 2
+[22] Moving key_14 from bucket 0 to 2
+[22] writing ptr 1 at offset 85
+[22] writing ptr 0 at offset 23
+[22] split done, new s: 1
+[22] writing header   1                   3                   1                   2
+Inserting key key_16
+[22] inserting key key_16
+[22] read header with nhash:3, s:1, i:2, nrecords:2
+[22] hash for key key_16 is 12602953495363846476, i=2
+[22] 1- bucket for key_16 is 0
+[22] Inserting/deleting key key_16 into bucket 0
+[22] writing ptr 45 at offset 71
+[22] insert done
+[22] oldnhash: 3, new nhash: 3
+[22] Splitting bucket 1
+[22] split done, new s: 0
+[22] writing header   1                   4                   0                   3
+Inserting key key_17
+[22] inserting key key_17
+[22] read header with nhash:4, s:0, i:2, nrecords:3
+[22] hash for key key_17 is 8301201680291703849, i=2
+[22] 1- bucket for key_17 is 1
+[22] Inserting/deleting key key_17 into bucket 1
+[22] writing ptr 68 at offset 78
+[22] insert done
+[22] oldnhash: 4, new nhash: 4
+[22] Splitting bucket 0
+[22] hash for key key_16 is 12602953495363846476, i=3
+[22] 1- bucket for key_16 is 4
+[22] Moving key_16 from bucket 0 to 4
+[22] writing ptr 45 at offset 99
+[22] writing ptr 23 at offset 71
+[22] hash for key key_15 is 14484708535144924784, i=3
+[22] 1- bucket for key_15 is 0
+[22] split done, new s: 1
+[22] writing header   1                   5                   1                   4
+Inserting key key_18
+[22] inserting key key_18
+[22] read header with nhash:5, s:1, i:3, nrecords:4
+[22] hash for key key_18 is 3789300845346070233, i=3
+[22] 1- bucket for key_18 is 1
+[22] Inserting/deleting key key_18 into bucket 1
+[22] writing ptr 91 at offset 78
+[22] insert done
+[22] oldnhash: 5, new nhash: 5
+[22] Splitting bucket 1
+[22] hash for key key_18 is 3789300845346070233, i=3
+[22] 1- bucket for key_18 is 1
+[22] hash for key key_17 is 8301201680291703849, i=3
+[22] 1- bucket for key_17 is 1
+[22] split done, new s: 2
+[22] writing header   1                   6                   2                   5
+Inserting key key_19
+[22] inserting key key_19
+[22] read header with nhash:6, s:2, i:3, nrecords:5
+[22] hash for key key_19 is 240712510563643459, i=3
+[22] 1- bucket for key_19 is 3
+[22] Inserting/deleting key key_19 into bucket 3
+[22] writing ptr 114 at offset 92
+[22] insert done
+[22] oldnhash: 6, new nhash: 6
+[22] Splitting bucket 2
+[22] hash for key key_14 is 16752845472010129638, i=3
+[22] 1- bucket for key_14 is 6
+[22] Moving key_14 from bucket 2 to 6
+[22] writing ptr 1 at offset 113
+[22] writing ptr 0 at offset 85
+[22] split done, new s: 3
+[22] writing header   1                   7                   3                   6
+Inserting key key_20
+[22] inserting key key_20
+[21] read header with nhash:7, s:3, i:3, nrecords:6
+Inserting key key_7
+[21] inserting key key_7
+[20] read header with nhash:7, s:3, i:3, nrecords:6
+Inserting key key_0
+[20] inserting key key_0
+[20] read header with nhash:7, s:3, i:3, nrecords:6
+[20] hash for key key_0 is 2292016348240878628, i=3
+[20] 1- bucket for key_0 is 4
+[20] Inserting/deleting key key_0 into bucket 4
+[20] writing ptr 137 at offset 99
+[20] insert done
+[20] oldnhash: 7, new nhash: 7
+[20] Splitting bucket 3
+[20] hash for key key_19 is 240712510563643459, i=3
+[20] 1- bucket for key_19 is 3
+[20] split done, new s: 0
+[20] writing header   1                   8                   0                   7
+Inserting key key_1
+[20] inserting key key_1
+[20] read header with nhash:8, s:0, i:3, nrecords:7
+[20] hash for key key_1 is 12693996018132059611, i=3
+[20] 1- bucket for key_1 is 3
+[20] Inserting/deleting key key_1 into bucket 3
+[20] writing ptr 159 at offset 92
+[20] insert done
+[20] oldnhash: 8, new nhash: 8
+[20] Splitting bucket 0
+[20] hash for key key_15 is 14484708535144924784, i=4
+[20] 1- bucket for key_15 is 0
+[20] split done, new s: 1
+[20] writing header   1                   9                   1                   8
+Inserting key key_2
+[20] inserting key key_2
+[22] read header with nhash:9, s:1, i:4, nrecords:8
+[22] hash for key key_20 is 15170794665616915500, i=4
+[22] 2- bucket for key_20 is 4, nhash: 9
+[22] Inserting/deleting key key_20 into bucket 4
+[22] writing ptr 181 at offset 99
+[22] insert done
+[22] oldnhash: 9, new nhash: 9
+[22] Splitting bucket 1
+[22] hash for key key_18 is 3789300845346070233, i=4
+[22] 1- bucket for key_18 is 9
+[22] Moving key_18 from bucket 1 to 9
+[22] writing ptr 91 at offset 134
+[22] writing ptr 68 at offset 78
+[22] hash for key key_17 is 8301201680291703849, i=4
+[22] 1- bucket for key_17 is 9
+[22] Moving key_17 from bucket 1 to 9
+[22] writing ptr 68 at offset 91
+[22] writing ptr 0 at offset 78
+[22] split done, new s: 2
+[22] writing header   1                  10                   2                   9
+[22] read header with nhash:10, s:2, i:4, nrecords:9
+[22] hash for key key_14 is 16752845472010129638, i=4
+[22] 1- bucket for key_14 is 6
+[22] reading key key_14 from bucket 6
+[22] read header with nhash:10, s:2, i:4, nrecords:9
+[22] hash for key key_15 is 14484708535144924784, i=4
+[22] 1- bucket for key_15 is 0
+[22] reading key key_15 from bucket 0
+[22] read header with nhash:10, s:2, i:4, nrecords:9
+[22] hash for key key_16 is 12602953495363846476, i=4
+[22] 2- bucket for key_16 is 4, nhash: 10
+[22] reading key key_16 from bucket 4
+[22] read header with nhash:10, s:2, i:4, nrecords:9
+[22] hash for key key_17 is 8301201680291703849, i=4
+[22] 1- bucket for key_17 is 9
+[22] reading key key_17 from bucket 9
+[21] read header with nhash:10, s:2, i:4, nrecords:9
+[21] hash for key key_7 is 1937638614530083127, i=4
+[21] 1- bucket for key_7 is 7
+[21] Inserting/deleting key key_7 into bucket 7
+[21] writing ptr 204 at offset 120
+[21] insert done
+[21] oldnhash: 10, new nhash: 10
+[21] Splitting bucket 2
+[21] split done, new s: 3
+[21] writing header   1                  11                   3                  10
+Inserting key key_8
+[21] inserting key key_8
+[22] read header with nhash:11, s:3, i:4, nrecords:10
+[22] hash for key key_18 is 3789300845346070233, i=4
+[22] 1- bucket for key_18 is 9
+[22] reading key key_18 from bucket 9
+[21] read header with nhash:11, s:3, i:4, nrecords:10
+[21] hash for key key_8 is 17587562869974620611, i=4
+[21] 1- bucket for key_8 is 3
+[21] Inserting/deleting key key_8 into bucket 3
+[21] writing ptr 226 at offset 92
+[21] insert done
+[21] oldnhash: 11, new nhash: 11
+[21] Splitting bucket 3
+[21] hash for key key_8 is 17587562869974620611, i=4
+[21] 1- bucket for key_8 is 3
+[21] hash for key key_1 is 12693996018132059611, i=4
+[21] 1- bucket for key_1 is 11
+[21] Moving key_1 from bucket 3 to 11
+[21] writing ptr 159 at offset 148
+[21] writing ptr 114 at offset 226
+[21] hash for key key_19 is 240712510563643459, i=4
+[21] 1- bucket for key_19 is 3
+[21] split done, new s: 4
+[21] writing header   1                  12                   4                  11
+Inserting key key_9
+[22] read header with nhash:12, s:4, i:4, nrecords:11
+[21] inserting key key_9
+[22] hash for key key_19 is 240712510563643459, i=4
+[22] 1- bucket for key_19 is 3
+[22] reading key key_19 from bucket 3
+[22] read header with nhash:12, s:4, i:4, nrecords:11
+[22] hash for key key_20 is 15170794665616915500, i=4
+[22] 2- bucket for key_20 is 4, nhash: 12
+[22] reading key key_20 from bucket 4
+[22] deleting key key_14
+[20] read header with nhash:12, s:4, i:4, nrecords:11
+[20] hash for key key_2 is 12472338967483493388, i=4
+[20] 2- bucket for key_2 is 4, nhash: 12
+[20] Inserting/deleting key key_2 into bucket 4
+[20] writing ptr 248 at offset 99
+[20] insert done
+[20] oldnhash: 12, new nhash: 12
+[20] Splitting bucket 4
+[20] hash for key key_2 is 12472338967483493388, i=4
+[20] 1- bucket for key_2 is 12
+[20] Moving key_2 from bucket 4 to 12
+[20] writing ptr 248 at offset 155
+[20] writing ptr 181 at offset 99
+[20] hash for key key_20 is 15170794665616915500, i=4
+[20] 1- bucket for key_20 is 12
+[20] Moving key_20 from bucket 4 to 12
+[20] writing ptr 181 at offset 248
+[20] writing ptr 137 at offset 99
+[20] hash for key key_0 is 2292016348240878628, i=4
+[20] 1- bucket for key_0 is 4
+[20] hash for key key_16 is 12602953495363846476, i=4
+[20] 1- bucket for key_16 is 12
+[20] Moving key_16 from bucket 4 to 12
+[20] writing ptr 45 at offset 181
+[20] writing ptr 23 at offset 137
+[20] hash for key key_15 is 14484708535144924784, i=4
+[20] 1- bucket for key_15 is 0
+[20] Moving key_15 from bucket 4 to 0
+[20] writing ptr 23 at offset 45
+[20] writing ptr 0 at offset 137
+[20] split done, new s: 5
+[20] writing header   1                  13                   5                  12
+Inserting key key_3
+[21] read header with nhash:13, s:5, i:4, nrecords:12
+[20] inserting key key_3
+[21] hash for key key_9 is 10362373664732641761, i=4
+[21] 1- bucket for key_9 is 1
+[21] Inserting/deleting key key_9 into bucket 1
+[21] writing ptr 270 at offset 78
+[21] insert done
+[21] oldnhash: 13, new nhash: 13
+[21] Splitting bucket 5
+[21] split done, new s: 6
+[21] writing header   1                  14                   6                  13
+Inserting key key_10
+[22] read header with nhash:14, s:6, i:4, nrecords:13
+[22] hash for key key_14 is 16752845472010129638, i=4
+[22] 1- bucket for key_14 is 6
+[22] Inserting/deleting key key_14 into bucket 6
+[22] offset for deleting key_14: 113, ptroff: 113
+[22] writing ptr 1 at offset 64
+[22] writing ptr 0 at offset 113
+[22] deleted key key_14
+[22] deleting key key_15
+[21] inserting key key_10
+[20] read header with nhash:14, s:6, i:4, nrecords:13
+[20] hash for key key_3 is 15426079982340633760, i=4
+[20] 1- bucket for key_3 is 0
+[20] Inserting/deleting key key_3 into bucket 0
+[20] writing ptr 292 at offset 71
+[20] insert done
+[20] oldnhash: 14, new nhash: 14
+[20] Splitting bucket 6
+[20] split done, new s: 7
+[20] writing header   1                  15                   7                  14
+Inserting key key_4
+[20] inserting key key_4
+[22] read header with nhash:15, s:7, i:4, nrecords:14
+[22] hash for key key_15 is 14484708535144924784, i=4
+[22] 1- bucket for key_15 is 0
+[22] Inserting/deleting key key_15 into bucket 0
+[22] offset for deleting key_15: 71, ptroff: 292
+[22] writing ptr 23 at offset 64
+[22] writing ptr 0 at offset 292
+[22] deleted key key_15
+[22] deleting key key_16
+[22] read header with nhash:15, s:7, i:4, nrecords:14
+[22] hash for key key_16 is 12602953495363846476, i=4
+[22] 1- bucket for key_16 is 12
+[22] Inserting/deleting key key_16 into bucket 12
+[22] offset for deleting key_16: 155, ptroff: 181
+[22] writing ptr 45 at offset 64
+[22] writing ptr 23 at offset 181
+[22] deleted key key_16
+[22] deleting key key_17
+[21] read header with nhash:15, s:7, i:4, nrecords:14
+[21] hash for key key_10 is 6913313834616920990, i=4
+[21] 1- bucket for key_10 is 14
+[21] Inserting/deleting key key_10 into bucket 14
+[21] writing ptr 314 at offset 169
+[21] insert done
+[21] oldnhash: 15, new nhash: 15
+[21] Splitting bucket 7
+[21] hash for key key_7 is 1937638614530083127, i=4
+[21] 1- bucket for key_7 is 7
+[21] split done, new s: 0
+[21] writing header   1                  16                   0                  15
+Inserting key key_11
+[21] inserting key key_11
+[20] read header with nhash:16, s:0, i:4, nrecords:15
+[20] hash for key key_4 is 9373275055793246717, i=4
+[20] 1- bucket for key_4 is 13
+[20] Inserting/deleting key key_4 into bucket 13
+[20] writing ptr 337 at offset 162
+[20] insert done
+[20] oldnhash: 16, new nhash: 16
+[20] Splitting bucket 0
+[20] hash for key key_3 is 15426079982340633760, i=5
+[20] 1- bucket for key_3 is 0
+[20] split done, new s: 1
+[20] writing header   1                  17                   1                  16
+Inserting key key_5
+[20] inserting key key_5
+[22] read header with nhash:17, s:1, i:5, nrecords:16
+[22] hash for key key_17 is 8301201680291703849, i=5
+[22] 1- bucket for key_17 is 9
+[22] Inserting/deleting key key_17 into bucket 9
+[22] offset for deleting key_17: 134, ptroff: 91
+[22] writing ptr 68 at offset 64
+[22] writing ptr 0 at offset 91
+[22] deleted key key_17
+[22] deleting key key_18
+[22] read header with nhash:17, s:1, i:5, nrecords:16
+[22] hash for key key_18 is 3789300845346070233, i=5
+[22] 2- bucket for key_18 is 9, nhash: 17
+[22] Inserting/deleting key key_18 into bucket 9
+[22] offset for deleting key_18: 134, ptroff: 134
+[22] writing ptr 91 at offset 64
+[22] writing ptr 0 at offset 134
+[22] deleted key key_18
+[22] deleting key key_19
+[20] read header with nhash:17, s:1, i:5, nrecords:16
+[20] hash for key key_5 is 7659495279674465000, i=5
+[20] 1- bucket for key_5 is 8
+[20] Inserting/deleting key key_5 into bucket 8
+[20] writing ptr 359 at offset 127
+[20] insert done
+[20] oldnhash: 17, new nhash: 17
+[20] Splitting bucket 1
+[20] hash for key key_9 is 10362373664732641761, i=5
+[20] 1- bucket for key_9 is 1
+[20] split done, new s: 2
+[20] writing header   1                  18                   2                  17
+Inserting key key_6
+[20] inserting key key_6
+[21] read header with nhash:18, s:2, i:5, nrecords:17
+[21] hash for key key_11 is 13310236769776416731, i=5
+[21] 2- bucket for key_11 is 11, nhash: 18
+[21] Inserting/deleting key key_11 into bucket 11
+[21] writing ptr 382 at offset 148
+[21] insert done
+[21] oldnhash: 18, new nhash: 18
+[21] Splitting bucket 2
+[21] split done, new s: 3
+[21] writing header   1                  19                   3                  18
+Inserting key key_12
+[21] inserting key key_12
+[22] read header with nhash:19, s:3, i:5, nrecords:18
+[22] hash for key key_19 is 240712510563643459, i=5
+[22] 1- bucket for key_19 is 3
+[22] Inserting/deleting key key_19 into bucket 3
+[22] offset for deleting key_19: 92, ptroff: 226
+[22] writing ptr 114 at offset 64
+[22] writing ptr 0 at offset 226
+[22] deleted key key_19
+[22] deleting key key_20
+[20] read header with nhash:19, s:3, i:5, nrecords:18
+[20] hash for key key_6 is 4211410979971309280, i=5
+[20] 1- bucket for key_6 is 0
+[20] Inserting/deleting key key_6 into bucket 0
+[20] writing ptr 406 at offset 71
+[20] insert done
+[20] oldnhash: 19, new nhash: 19
+[20] Splitting bucket 3
+[20] hash for key key_8 is 17587562869974620611, i=5
+[20] 1- bucket for key_8 is 3
+[20] split done, new s: 4
+[20] writing header   1                  20                   4                  19
+[20] read header with nhash:20, s:4, i:5, nrecords:19
+[20] hash for key key_0 is 2292016348240878628, i=5
+[20] 1- bucket for key_0 is 4
+[20] reading key key_0 from bucket 4
+[21] read header with nhash:20, s:4, i:5, nrecords:19
+[21] hash for key key_12 is 11976717652096338818, i=5
+[21] 1- bucket for key_12 is 2
+[21] Inserting/deleting key key_12 into bucket 2
+[21] writing ptr 429 at offset 85
+[21] insert done
+[21] oldnhash: 20, new nhash: 20
+[21] Splitting bucket 4
+[21] hash for key key_0 is 2292016348240878628, i=5
+[21] 1- bucket for key_0 is 4
+[21] split done, new s: 5
+[21] writing header   1                  21                   5                  20
+Inserting key key_13
+[21] inserting key key_13
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_20 is 15170794665616915500, i=5
+[22] 1- bucket for key_20 is 12
+[22] Inserting/deleting key key_20 into bucket 12
+[22] offset for deleting key_20: 155, ptroff: 248
+[22] writing ptr 181 at offset 64
+[22] writing ptr 23 at offset 248
+[22] deleted key key_20
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_14 is 16752845472010129638, i=5
+[22] 1- bucket for key_14 is 6
+[22] reading key key_14 from bucket 6
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_15 is 14484708535144924784, i=5
+[22] 1- bucket for key_15 is 16
+[22] reading key key_15 from bucket 16
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_16 is 12602953495363846476, i=5
+[22] 1- bucket for key_16 is 12
+[22] reading key key_16 from bucket 12
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_17 is 8301201680291703849, i=5
+[22] 1- bucket for key_17 is 9
+[22] reading key key_17 from bucket 9
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_18 is 3789300845346070233, i=5
+[22] 2- bucket for key_18 is 9, nhash: 21
+[22] reading key key_18 from bucket 9
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_19 is 240712510563643459, i=5
+[22] 1- bucket for key_19 is 3
+[22] reading key key_19 from bucket 3
+[22] read header with nhash:21, s:5, i:5, nrecords:20
+[22] hash for key key_20 is 15170794665616915500, i=5
+[22] 1- bucket for key_20 is 12
+[22] reading key key_20 from bucket 12
+[20] read header with nhash:21, s:5, i:5, nrecords:20
+[20] hash for key key_1 is 12693996018132059611, i=5
+[20] 2- bucket for key_1 is 11, nhash: 21
+[20] reading key key_1 from bucket 11
+[21] read header with nhash:21, s:5, i:5, nrecords:20
+[21] hash for key key_13 is 7726834572902133520, i=5
+[21] 1- bucket for key_13 is 16
+[21] Inserting/deleting key key_13 into bucket 16
+[21] writing ptr 453 at offset 183
+[21] insert done
+[21] oldnhash: 21, new nhash: 21
+[21] Splitting bucket 5
+[21] split done, new s: 6
+[21] writing header   1                  22                   6                  21
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_7 is 1937638614530083127, i=5
+[21] 2- bucket for key_7 is 7, nhash: 22
+[21] reading key key_7 from bucket 7
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_8 is 17587562869974620611, i=5
+[21] 1- bucket for key_8 is 3
+[21] reading key key_8 from bucket 3
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_9 is 10362373664732641761, i=5
+[21] 1- bucket for key_9 is 1
+[21] reading key key_9 from bucket 1
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_10 is 6913313834616920990, i=5
+[21] 2- bucket for key_10 is 14, nhash: 22
+[21] reading key key_10 from bucket 14
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_11 is 13310236769776416731, i=5
+[21] 2- bucket for key_11 is 11, nhash: 22
+[21] reading key key_11 from bucket 11
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_12 is 11976717652096338818, i=5
+[21] 1- bucket for key_12 is 2
+[21] reading key key_12 from bucket 2
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_13 is 7726834572902133520, i=5
+[21] 1- bucket for key_13 is 16
+[21] reading key key_13 from bucket 16
+[21] deleting key key_7
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_2 is 12472338967483493388, i=5
+[20] 1- bucket for key_2 is 12
+[20] reading key key_2 from bucket 12
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_7 is 1937638614530083127, i=5
+[21] 2- bucket for key_7 is 7, nhash: 22
+[21] Inserting/deleting key key_7 into bucket 7
+[21] offset for deleting key_7: 120, ptroff: 120
+[21] writing ptr 204 at offset 64
+[21] writing ptr 0 at offset 120
+[21] deleted key key_7
+[21] deleting key key_8
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_3 is 15426079982340633760, i=5
+[20] 1- bucket for key_3 is 0
+[20] reading key key_3 from bucket 0
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_8 is 17587562869974620611, i=5
+[21] 1- bucket for key_8 is 3
+[21] Inserting/deleting key key_8 into bucket 3
+[21] offset for deleting key_8: 92, ptroff: 92
+[21] writing ptr 226 at offset 64
+[21] writing ptr 0 at offset 92
+[21] deleted key key_8
+[21] deleting key key_9
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_4 is 9373275055793246717, i=5
+[20] 2- bucket for key_4 is 13, nhash: 22
+[20] reading key key_4 from bucket 13
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_9 is 10362373664732641761, i=5
+[21] 1- bucket for key_9 is 1
+[21] Inserting/deleting key key_9 into bucket 1
+[21] offset for deleting key_9: 78, ptroff: 78
+[21] writing ptr 270 at offset 64
+[21] writing ptr 0 at offset 78
+[21] deleted key key_9
+[21] deleting key key_10
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_5 is 7659495279674465000, i=5
+[20] 1- bucket for key_5 is 8
+[20] reading key key_5 from bucket 8
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_10 is 6913313834616920990, i=5
+[21] 2- bucket for key_10 is 14, nhash: 22
+[21] Inserting/deleting key key_10 into bucket 14
+[21] offset for deleting key_10: 169, ptroff: 169
+[21] writing ptr 314 at offset 64
+[21] writing ptr 0 at offset 169
+[21] deleted key key_10
+[21] deleting key key_11
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_6 is 4211410979971309280, i=5
+[20] 1- bucket for key_6 is 0
+[20] reading key key_6 from bucket 0
+[20] deleting key key_0
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_11 is 13310236769776416731, i=5
+[21] 2- bucket for key_11 is 11, nhash: 22
+[21] Inserting/deleting key key_11 into bucket 11
+[21] offset for deleting key_11: 148, ptroff: 148
+[21] writing ptr 382 at offset 64
+[21] writing ptr 159 at offset 148
+[21] deleted key key_11
+[21] deleting key key_12
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_0 is 2292016348240878628, i=5
+[20] 1- bucket for key_0 is 4
+[20] Inserting/deleting key key_0 into bucket 4
+[20] offset for deleting key_0: 99, ptroff: 99
+[20] writing ptr 137 at offset 64
+[20] writing ptr 0 at offset 99
+[20] deleted key key_0
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[20] deleting key key_1
+[21] hash for key key_12 is 11976717652096338818, i=5
+[21] 1- bucket for key_12 is 2
+[21] Inserting/deleting key key_12 into bucket 2
+[21] offset for deleting key_12: 85, ptroff: 85
+[21] writing ptr 429 at offset 64
+[21] writing ptr 0 at offset 85
+[21] deleted key key_12
+[21] deleting key key_13
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_1 is 12693996018132059611, i=5
+[20] 2- bucket for key_1 is 11, nhash: 22
+[20] Inserting/deleting key key_1 into bucket 11
+[20] offset for deleting key_1: 148, ptroff: 148
+[20] writing ptr 159 at offset 64
+[20] writing ptr 114 at offset 148
+[20] deleted key key_1
+[20] deleting key key_2
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_13 is 7726834572902133520, i=5
+[21] 1- bucket for key_13 is 16
+[21] Inserting/deleting key key_13 into bucket 16
+[21] offset for deleting key_13: 183, ptroff: 183
+[21] writing ptr 453 at offset 64
+[21] writing ptr 0 at offset 183
+[21] deleted key key_13
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_7 is 1937638614530083127, i=5
+[21] 2- bucket for key_7 is 7, nhash: 22
+[21] reading key key_7 from bucket 7
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_8 is 17587562869974620611, i=5
+[21] 1- bucket for key_8 is 3
+[21] reading key key_8 from bucket 3
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_9 is 10362373664732641761, i=5
+[21] 1- bucket for key_9 is 1
+[21] reading key key_9 from bucket 1
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_10 is 6913313834616920990, i=5
+[21] 2- bucket for key_10 is 14, nhash: 22
+[21] reading key key_10 from bucket 14
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_11 is 13310236769776416731, i=5
+[21] 2- bucket for key_11 is 11, nhash: 22
+[21] reading key key_11 from bucket 11
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_12 is 11976717652096338818, i=5
+[21] 1- bucket for key_12 is 2
+[21] reading key key_12 from bucket 2
+[21] read header with nhash:22, s:6, i:5, nrecords:21
+[21] hash for key key_13 is 7726834572902133520, i=5
+[21] 1- bucket for key_13 is 16
+[21] reading key key_13 from bucket 16
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_2 is 12472338967483493388, i=5
+[20] 1- bucket for key_2 is 12
+[20] Inserting/deleting key key_2 into bucket 12
+[20] offset for deleting key_2: 155, ptroff: 155
+[20] writing ptr 248 at offset 64
+[20] writing ptr 23 at offset 155
+[20] deleted key key_2
+[20] deleting key key_3
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_3 is 15426079982340633760, i=5
+[20] 1- bucket for key_3 is 0
+[20] Inserting/deleting key key_3 into bucket 0
+[20] offset for deleting key_3: 71, ptroff: 406
+[20] writing ptr 292 at offset 64
+[20] writing ptr 0 at offset 406
+[20] deleted key key_3
+[20] deleting key key_4
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_4 is 9373275055793246717, i=5
+[20] 2- bucket for key_4 is 13, nhash: 22
+[20] Inserting/deleting key key_4 into bucket 13
+[20] offset for deleting key_4: 162, ptroff: 162
+[20] writing ptr 337 at offset 64
+[20] writing ptr 0 at offset 162
+[20] deleted key key_4
+[20] deleting key key_5
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_5 is 7659495279674465000, i=5
+[20] 1- bucket for key_5 is 8
+[20] Inserting/deleting key key_5 into bucket 8
+[20] offset for deleting key_5: 127, ptroff: 127
+[20] writing ptr 359 at offset 64
+[20] writing ptr 0 at offset 127
+[20] deleted key key_5
+[20] deleting key key_6
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_6 is 4211410979971309280, i=5
+[20] 1- bucket for key_6 is 0
+[20] Inserting/deleting key key_6 into bucket 0
+[20] offset for deleting key_6: 71, ptroff: 71
+[20] writing ptr 406 at offset 64
+[20] writing ptr 0 at offset 71
+[20] deleted key key_6
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_0 is 2292016348240878628, i=5
+[20] 1- bucket for key_0 is 4
+[20] reading key key_0 from bucket 4
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_1 is 12693996018132059611, i=5
+[20] 2- bucket for key_1 is 11, nhash: 22
+[20] reading key key_1 from bucket 11
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_2 is 12472338967483493388, i=5
+[20] 1- bucket for key_2 is 12
+[20] reading key key_2 from bucket 12
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_3 is 15426079982340633760, i=5
+[20] 1- bucket for key_3 is 0
+[20] reading key key_3 from bucket 0
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_4 is 9373275055793246717, i=5
+[20] 2- bucket for key_4 is 13, nhash: 22
+[20] reading key key_4 from bucket 13
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_5 is 7659495279674465000, i=5
+[20] 1- bucket for key_5 is 8
+[20] reading key key_5 from bucket 8
+[20] read header with nhash:22, s:6, i:5, nrecords:21
+[20] hash for key key_6 is 4211410979971309280, i=5
+[20] 1- bucket for key_6 is 0
+[20] reading key key_6 from bucket 0
+--- PASS: TestConcurrentReadWrite (0.01s)
+PASS
+ok  	github.com/abhinav-upadhyay/brickdb/index/linear_hash_index	0.009s
