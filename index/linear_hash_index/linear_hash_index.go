@@ -38,7 +38,6 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	// "github.com/cespare/xxhash"
 	"github.com/OneOfOne/xxhash"
 	"golang.org/x/sys/unix"
 )
@@ -94,6 +93,11 @@ type LinearHashIndex struct {
 	i        int16
 	s        uint64
 	nrecords int64
+	debug    bool
+}
+
+func (self *LinearHashIndex) EnableDebug() {
+	self.debug = true
 }
 
 func (self *LinearHashIndex) Open(name string, mode int) error {
@@ -166,9 +170,9 @@ func (self *LinearHashIndex) Open(name string, mode int) error {
 			self.bktFile.Write([]byte("\n"))
 		}
 	} else {
-		self.readHeader(true)
+		self.readHeader(true, false)
 		defer func() error {
-			return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 0)
+			return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
 		}()
 
 		// if err := ReadLockW(self.idxFile.Fd(), 0, io.SeekStart, 0); err != nil {
@@ -279,12 +283,9 @@ func (self *LinearHashIndex) FetchAll() (map[string]string, error) {
 }
 
 func (self *LinearHashIndex) Fetch(key string) (string, error) {
-	self.readHeader(true) //TODO: can be a read lock and not required to hold it
-	// defer func() error {
-	// }()
-
 	found, err := self.findAndLock(key, false)
 	defer Unlock(self.idxFile.Fd(), self.chainoff, io.SeekStart, 1)
+	defer Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
 	if err != nil {
 		return "", err
 	}
@@ -295,7 +296,6 @@ func (self *LinearHashIndex) Fetch(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 0)
 	return val, nil
 }
 
@@ -307,15 +307,20 @@ func (self *LinearHashIndex) findAndLock(key string, isWriteLock bool) (bool, er
 	 * Calculate the hash value for the key, and then calculate the offset of
 	 * corresponding chain pointer in hash table
 	 */
+	err := self.readHeader(true, false)
+	if err != nil {
+		return false, err
+	}
 	hash := self.dbHash(key)
-	if isWriteLock {
-		fmt.Printf("[%d] Inserting/deleting key %s into bucket %d\n", getGID(), key, hash)
-	} else {
-		fmt.Printf("[%d] reading key %s from bucket %d\n", getGID(), key, hash)
+	if self.debug {
+		if isWriteLock {
+			fmt.Printf("[%d] Inserting/deleting key %s into bucket %d\n", getGID(), key, hash)
+		} else {
+			fmt.Printf("[%d] reading key %s from bucket %d\n", getGID(), key, hash)
+		}
 	}
 	self.chainoff = int64(hash*ptr_sz) + self.hashoff
 	self.ptroff = self.chainoff
-	var err error
 
 	/**
 	 * We lock the hash chain, the caller must unlock it. Note we lock and unlock only
@@ -360,13 +365,19 @@ func (self *LinearHashIndex) dbHash(key string) uint64 {
 	hasher := xxhash.NewS64(42)
 	hasher.WriteString(key)
 	hash := hasher.Sum64()
-	fmt.Printf("[%d] hash for key %s is %d, i=%d\n", getGID(), key, hash, self.i)
+	if self.debug {
+		fmt.Printf("[%d] hash for key %s is %d, i=%d\n", getGID(), key, hash, self.i)
+	}
 	bktidx := hash & ((1 << self.i) - 1)
 	if bktidx < self.nhash {
-		fmt.Printf("[%d] 1- bucket for %s is %d\n", getGID(), key, bktidx)
+		if self.debug {
+			fmt.Printf("[%d] 1- bucket for %s is %d\n", getGID(), key, bktidx)
+		}
 		return bktidx
 	} else {
-		fmt.Printf("[%d] 2- bucket for %s is %d, nhash: %d\n", getGID(), key, (bktidx ^ (1 << (self.i - 1))), self.nhash)
+		if self.debug {
+			fmt.Printf("[%d] 2- bucket for %s is %d, nhash: %d\n", getGID(), key, (bktidx ^ (1 << (self.i - 1))), self.nhash)
+		}
 		return bktidx ^ (1 << (self.i - 1))
 	}
 }
@@ -517,15 +528,17 @@ func (self *LinearHashIndex) readData() (string, error) {
 	return self.datbuf, nil
 }
 
-func (self *LinearHashIndex) readHeader(doLock bool) error {
+func (self *LinearHashIndex) readHeader(doLock bool, isWriteLock bool) error {
 	if doLock {
-		err := WriteLockW(self.idxFile.Fd(), idx_header_off, io.SeekStart, 0)
+		var err error
+		if isWriteLock {
+			err = WriteLockW(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
+		} else {
+			err = ReadLockW(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
+		}
 		if err != nil {
 			return err
 		}
-		// defer func() error {
-		// 	return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
-		// }()
 	}
 	_, err := self.idxFile.Seek(idx_header_off, io.SeekStart)
 	if err != nil {
@@ -548,27 +561,18 @@ func (self *LinearHashIndex) readHeader(doLock bool) error {
 	self.s, _ = parseUint(string(sBUf))
 	self.nrecords, _ = parseInt(string(nrecordsBuf))
 	self.i = int16(math.Ceil(math.Log2(float64(self.nhash))))
-	fmt.Printf("[%d] read header with nhash:%d, s:%d, i:%d, nrecords:%d\n", getGID(), self.nhash, self.s, self.i, self.nrecords)
+	if self.debug {
+		fmt.Printf("[%d] read header with nhash:%d, s:%d, i:%d, nrecords:%d\n", getGID(), self.nhash, self.s, self.i, self.nrecords)
+	}
 	return nil
 }
 
-func (self *LinearHashIndex) updateHeader(change int) error {
-	// err := WriteLockW(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer func() error {
-	// 	return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
-	// }()
-	// nhash := self.nhash
-	// nrecords := self.nrecords
-	// self.readHeader(false)
-	// nhashDiff := self.nhash + change
-	// nrecordsDiff := nrecords - self.nrecords
-	if change > 0 {
-		self.nrecords++
-	} else {
-		self.nrecords--
+func (self *LinearHashIndex) updateHeader(nrecordsChange int64, nhashChange uint64, sChange uint64) error {
+	self.nrecords += nrecordsChange
+	self.nhash += nhashChange
+	self.s += sChange
+	if self.s*2 == self.nhash {
+		self.s = 0
 	}
 	self.writeHeader()
 	return nil
@@ -576,7 +580,9 @@ func (self *LinearHashIndex) updateHeader(change int) error {
 
 func (self *LinearHashIndex) writeHeader() error {
 	header := fmt.Sprintf("%*d%*d%*d%*d\n", idxtype_sz, 1, nbuckets_sz, self.nhash, split_pointer_sz, self.s, nrecords_sz, self.nrecords)
-	fmt.Printf("[%d] writing header %s", getGID(), header)
+	if self.debug {
+		fmt.Printf("[%d] writing header %s", getGID(), header)
+	}
 	_, err := self.idxFile.Seek(idx_header_off, io.SeekStart)
 	_, err = self.idxFile.Write([]byte(header))
 	return err
@@ -592,47 +598,39 @@ func (self *LinearHashIndex) delete2(key string) (bool, error) {
 	}()
 	if found {
 		//TODO: update nrecords in header
-		fmt.Printf("[%d] offset for deleting %s: %d, ptroff: %d\n", getGID(), key, self.chainoff, self.ptroff)
+		if self.debug {
+			fmt.Printf("[%d] offset for deleting %s: %d, ptroff: %d\n", getGID(), key, self.chainoff, self.ptroff)
+		}
 		err = self._delete()
 		if err != nil {
 			return found, err
 		}
-		fmt.Printf("[%d] deleted key %s\n", getGID(), key)
+		if self.debug {
+			fmt.Printf("[%d] deleted key %s\n", getGID(), key)
+		}
+		// self.updateHeader(-1, 0, 0)
 	}
 	return found, nil
 }
 
 func (self *LinearHashIndex) Delete(key string) error {
-	fmt.Printf("[%d] deleting key %s\n", getGID(), key)
-	err := self.readHeader(true) //TODO: we just need a read lock
-	if err != nil {
-		return err
+	if self.debug {
+		fmt.Printf("[%d] deleting key %s\n", getGID(), key)
 	}
-	defer func() error {
-		return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 0)
-	}()
 
-	_, err = self.delete2(key)
+	_, err := self.delete2(key)
+	defer func() error {
+		return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
+	}()
 	if err != nil {
 		return err
 	}
-	// if deleted {
-	// 	err = self.readHeader(true)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	defer func() error {
-	// 		return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 0)
-	// 	}()
-	// 	// self.nrecords--
-	// 	return self.updateHeader(-1)
-	// }
 	return nil
 }
 
 func (self *LinearHashIndex) _delete() error {
 	var freeptr, saveptr int64
-	self.datbuf = strings.Repeat(" ", len(self.datbuf))
+	self.datbuf = strings.Repeat(" ", int(self.datlen)-1)
 	self.idxbuf = strings.Repeat(" ", len(self.idxbuf))
 	err := WriteLockW(self.idxFile.Fd(), free_off, io.SeekStart, 1)
 	if err != nil {
@@ -740,7 +738,9 @@ func (self *LinearHashIndex) writePtr(f *os.File, offset int64, ptrval int64) er
 	if ptrval < 0 || ptrval > ptr_max {
 		return fmt.Errorf("Invalid ptrval: %d", ptrval)
 	}
-	fmt.Printf("[%d] writing ptr %d at offset %d\n", getGID(), ptrval, offset)
+	if self.debug {
+		fmt.Printf("[%d] writing ptr %d at offset %d\n", getGID(), ptrval, offset)
+	}
 	asciiptr := fmt.Sprintf("%*d", ptr_sz, ptrval)
 	_, err := f.Seek(offset, io.SeekStart)
 	if err != nil {
@@ -754,43 +754,53 @@ func (self *LinearHashIndex) writePtr(f *os.File, offset int64, ptrval int64) er
 }
 
 func (self *LinearHashIndex) Insert(key string, value string) error {
-	fmt.Printf("[%d] inserting key %s\n", getGID(), key)
+	if self.debug {
+		fmt.Printf("[%d] inserting key %s\n", getGID(), key)
+	}
 	err := self.store(key, value, insert)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("[%d] insert done\n", getGID())
+	if self.debug {
+		fmt.Printf("[%d] insert done\n", getGID())
+	}
 	// we read the header and lock the index file to update the header
-	oldNHash := self.nhash
-	// err = self.readHeader(true)
-	if err != nil {
-		return err
-	}
 	defer func() error {
-		return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 0)
+		return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
 	}()
-	if oldNHash < self.nhash {
-		return nil
-	}
-	fmt.Printf("[%d] oldnhash: %d, new nhash: %d\n", getGID(), oldNHash, self.nhash)
-
-	nrecords := self.nrecords + 1
+	self.nrecords++
 	//TODO: is the cast really required here?
-	loadFactor := float64(1.0 * nrecords / int64(1*self.nhash))
-	if loadFactor >= 0.8 {
-		fmt.Printf("[%d] Splitting bucket %d\n", getGID(), self.s)
+	if self.computeLoadFactor() >= 0.8 {
+		Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
+		self.readHeader(true, true)
+		self.nrecords++
+		if self.computeLoadFactor() < 0.8 {
+			return self.updateHeader(0, 0, 0)
+		}
+		if self.debug {
+			fmt.Printf("[%d] Splitting bucket %d\n", getGID(), self.s)
+		}
 		err = self.split()
 		if err != nil {
-			self.updateHeader(1)
 			return err
 		}
-		fmt.Printf("[%d] split done, new s: %d\n", getGID(), self.s)
-	}
-	err = self.updateHeader(1)
-	if err != nil {
-		return err
+		self.updateHeader(0, 0, 0)
+		if self.debug {
+			fmt.Printf("[%d] split done, new s: %d\n", getGID(), self.s)
+		}
+	} else {
+		Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
+		self.readHeader(true, true)
+		err = self.updateHeader(1, 0, 0)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func (self *LinearHashIndex) computeLoadFactor() float64 {
+	return float64(1.0 * self.nrecords / int64(1*self.nhash))
 }
 
 func getGID() uint64 {
@@ -803,18 +813,14 @@ func getGID() uint64 {
 }
 
 func (self *LinearHashIndex) split() error {
-	// if err := WriteLockW(self.idxFile.Fd(), 1, io.SeekStart, 0); err != nil {
-	// 	return err
-	// }
-
-	// defer func() error {
-	// 	return Unlock(self.idxFile.Fd(), 1, io.SeekStart, 0)
-	// }()
-	// chainOff := self.hashoff + ((int64(self.s)) * ptr_sz)
-	// WriteLockW(self.idxFile.Fd(), chainOff, io.SeekStart, 0)
-	// defer func() error {
-	// 	return Unlock(self.idxFile.Fd(), chainOff, io.SeekStart, 0)
-	// }()
+	oldS := self.s
+	self.s++
+	oldChainPtrOff := int64(oldS*ptr_sz) + self.hashoff
+	err := WriteLockW(self.idxFile.Fd(), oldChainPtrOff, io.SeekStart, 1)
+	if err != nil {
+		return err
+	}
+	defer Unlock(self.idxFile.Fd(), oldChainPtrOff, io.SeekStart, 1)
 	hashPointer := fmt.Sprintf("%*d", ptr_sz, 0)
 	bytes := []byte(hashPointer)
 	newChainPtrOff, err := self.idxFile.Seek(0, io.SeekEnd)
@@ -825,18 +831,20 @@ func (self *LinearHashIndex) split() error {
 	if bytesWritten != len(bytes) {
 		return errors.New("Failed to initialize index file")
 	}
-	self.nhash++
-	if self.nhash > (1 << self.i) {
-		self.i++
+	err = WriteLockW(self.idxFile.Fd(), newChainPtrOff, io.SeekStart, 1)
+	if err != nil {
+		return err
 	}
-	oldS := self.s
-	self.s++
+	defer Unlock(self.idxFile.Fd(), newChainPtrOff, io.SeekStart, 1)
+	self.nhash++
 	if self.s*2 == self.nhash {
 		self.s = 0
 	}
+	if self.nhash > (1 << self.i) {
+		self.i++
+	}
 
 	// rehash the chain being split
-	oldChainPtrOff := int64(oldS*ptr_sz) + self.hashoff
 	newChainPtrOffFile := self.idxFile
 	oldChainPtrOffFile := self.idxFile
 	offset, err := self.readPtr(oldChainPtrOff, self.idxFile)
@@ -852,7 +860,9 @@ func (self *LinearHashIndex) split() error {
 		}
 		chainOff := int64(self.dbHash(self.idxbuf))
 		if chainOff != int64(oldS) {
-			fmt.Printf("[%d] Moving %s from bucket %d to %d\n", getGID(), self.idxbuf, oldS, chainOff)
+			if self.debug {
+				fmt.Printf("[%d] Moving %s from bucket %d to %d\n", getGID(), self.idxbuf, oldS, chainOff)
+			}
 			err = self.writePtr(newChainPtrOffFile, newChainPtrOff, offset)
 			if err != nil {
 				return err
@@ -875,16 +885,17 @@ func (self *LinearHashIndex) split() error {
 }
 
 func (self *LinearHashIndex) Update(key string, value string) error {
+	defer Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
 	return self.store(key, value, update)
 }
 
 func (self *LinearHashIndex) Upsert(key string, value string) error {
 	//TODO: handle split
+	defer Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
 	return self.store(key, value, upsert)
 }
 
 func (self *LinearHashIndex) store(key string, value string, op indexStoreOp) error {
-	self.readHeader(true)
 	keyLen := int64(len(key))
 	valueLen := int64(len(value))
 	if valueLen < datlen_min || valueLen > datlen_max {

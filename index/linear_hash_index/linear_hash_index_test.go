@@ -274,7 +274,7 @@ func TestConcurrentReadWrite(t *testing.T) {
 		keys[i] = fmt.Sprintf("key_%d", i)
 		vals[i] = fmt.Sprintf("val_%d", i)
 	}
-	nthreads := 100
+	nthreads := 10
 	step := 100
 	for i := 0; i < nthreads; i++ {
 		wg.Add(1)
@@ -288,14 +288,12 @@ func TestConcurrentReadWrite(t *testing.T) {
 
 func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 	defer wg.Done()
-	fmt.Printf("working with keys %v\n", keys)
 	hashIndex, err := openNewDB(false, os.O_RDWR)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer hashIndex.Close()
 	for i, k := range keys {
-		fmt.Printf("Inserting key %s\n", k)
 		err := hashIndex.Insert(k, vals[i])
 		if err != nil {
 			t.Fatal(err)
@@ -313,7 +311,6 @@ func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 	}
 
 	for _, k := range keys {
-		// fmt.Printf("Deleting key %s\n", k)
 		err := hashIndex.Delete(k)
 		if err != nil {
 			t.Fatal(err)
