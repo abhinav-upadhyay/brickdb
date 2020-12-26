@@ -43,7 +43,7 @@ const (
 )
 
 func TestCreateIndex(t *testing.T) {
-	_, err := openNewDB(true)
+	_, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -66,7 +66,7 @@ func TestCreateIndex(t *testing.T) {
 }
 
 func TestStoreOneRecord(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -85,7 +85,7 @@ func TestStoreOneRecord(t *testing.T) {
 }
 
 func TestStoreMultipleRecords(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -115,7 +115,7 @@ func TestStoreMultipleRecords(t *testing.T) {
 }
 
 func TestDeleteSimple(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -149,7 +149,7 @@ func TestDeleteSimple(t *testing.T) {
 }
 
 func TestDeleteMulti(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -192,7 +192,7 @@ func TestDeleteMulti(t *testing.T) {
 }
 
 func TestInsertDeleteInsertFetch(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -225,7 +225,7 @@ func TestInsertDeleteInsertFetch(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -266,7 +266,7 @@ func TestConcurrentReadWrite(t *testing.T) {
 		}
 	}()
 	var wg sync.WaitGroup
-	openNewDB(true)
+	openNewDB(true, os.O_RDWR|os.O_CREATE)
 	// defer removeDB(TEST_DB_NAME)
 	nrecords := 10000
 	keys := make([]string, nrecords)
@@ -290,7 +290,7 @@ func TestConcurrentReadWrite(t *testing.T) {
 func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 	defer wg.Done()
 	fmt.Printf("working with keys %v\n", keys)
-	hashIndex, err := openNewDB(false)
+	hashIndex, err := openNewDB(false, os.O_RDWR)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -332,7 +332,7 @@ func work(t *testing.T, wg *sync.WaitGroup, keys []string, vals []string) {
 }
 
 func TestFetchAll(t *testing.T) {
-	hashIndex, err := openNewDB(true)
+	hashIndex, err := openNewDB(true, os.O_RDWR|os.O_CREATE)
 	defer removeDB(TEST_DB_NAME)
 	if err != nil {
 		t.Fatal(err)
@@ -368,12 +368,12 @@ func TestFetchAll(t *testing.T) {
 	}
 }
 
-func openNewDB(removeExisting bool) (*HashIndex, error) {
+func openNewDB(removeExisting bool, mode int) (*HashIndex, error) {
 	if removeExisting {
 		removeDB(TEST_DB_NAME)
 	}
 	hashIndex := new(HashIndex)
-	err := hashIndex.Open(TEST_DB_NAME, os.O_RDWR|os.O_CREATE)
+	err := hashIndex.Open(TEST_DB_NAME, mode)
 	return hashIndex, err
 }
 
