@@ -175,35 +175,6 @@ func (self *LinearHashIndex) Open(name string, mode int) error {
 			return Unlock(self.idxFile.Fd(), idx_header_off, io.SeekStart, 1)
 		}()
 
-		// if err := ReadLockW(self.idxFile.Fd(), 0, io.SeekStart, 0); err != nil {
-		// 	return err
-		// }
-		// defer Unlock(self.idxFile.Fd(), 0, 0, 1)
-		// idxtype := make([]byte, idxtype_sz)
-		// nbuckets := make([]byte, nbuckets_sz)
-		// splitPointer := make([]byte, split_pointer_sz)
-		// nrecords := make([]byte, nrecords_sz)
-		// iovecBytes := make([][]byte, 4)
-		// iovecBytes[0] = idxtype
-		// iovecBytes[1] = nbuckets
-		// iovecBytes[2] = splitPointer
-		// iovecBytes[3] = nrecords
-		// bytesRead, err := unix.Readv(int(self.idxFile.Fd()), iovecBytes)
-		// if err != nil {
-		// 	return err
-		// }
-		// if bytesRead != idx_header_size {
-		// 	return fmt.Errorf("Expected to read %d bytes from header, read %d", idx_header_size, bytesRead)
-		// }
-		// self.nhash, err = strconv.ParseUint(string(nbuckets), 10, 64)
-		// if err != nil {
-		// 	return err
-		// }
-		// self.s, err = strconv.ParseUint(string(splitPointer), 10, 64)
-		// if err != nil {
-		// 	return err
-		// }
-		// self.nrecords, err = strconv.ParseInt(string(nrecords), 10, 64)
 		if err != nil {
 			return err
 		}
