@@ -5,24 +5,17 @@ A simple concurrent hash index based key-value store in go. It is very much insp
 ### Features and Limitations
 - Concurrent - It uses byte-range locking to allow multiple readers and writers at the same time to the database
 - Embeddable - Instead of a stand-alone process, this is an embeddable database library with persistence to disk
-- Hash index based - It uses a hash table to index the data. Currently it uses a fixed size static table, which
-means with as the number of keys grow, access will get slower. A dynamic hash table can make it a constant time read
-and write (TODO)
+- Supported index types - Currently only hash based indexing is supported. There are two hash index implementations, one is a static hash table in which the index is initialized with a fixed size. As more and more keys are stored, the table will get slower due to increased collision. The second implementation is a dynamic hash index using linear hashing, it dynamically grows the table as collisions increase. But it can get slow if there are two many processes/threads writing at the same time due to increased lock contention.
 - Ordered Access - Since the only supported index format is hash table based, there is no mechanism to access the keys in sorted order.
 - Query Engine - There is no query engine implemented yet. There are functions available in the library to query data though.
 
 ### Usage
 
-*Create database*
+*Create/Open database*
+(following will create the database with given name if one doesn't exist already, or open the existing one)
 ```go
-	db := brickdb.New(name)
-	db.Create(index.HashIndexType) //only HashIndexType is supported right now
-```
-
-*Open existing database*
-```go
-	db := brickdb.New(name)
-	db.Open(os.O_RDWR) //can also use os.O_RDONLY for read only access
+	db := brickdb.New(name, index.LinearHashIndexType) // the index type is index.HashIndexType which is static hash table
+	err := db.Open()
 ```
 
 *Insert record*
@@ -70,7 +63,9 @@ and write (TODO)
 
 ```
 ### Cautions to be taken when using with goroutines
-The database uses the posix byte range locking to support concurrent reads and writes. The Brickdb object maintains state internally to operate which makes it difficult to share the same object with multiple goroutines as the state will get corrupted, possibly leading to a deadlock. The solution is to let each goroutine obtain its own handle to the database by calling `NewBrickdb()`.
+- The database uses the posix byte range locking to support concurrent reads and writes. The Brickdb object maintains state internally to operate which makes it difficult to share the same object with multiple goroutines as the state will get corrupted, possibly leading to a deadlock. The solution is to let each goroutine obtain its own handle to the database by calling `NewBrickdb()`.
+- When using the static hash index (`index.HashIndexType`), the reads will get slower over time as number of keys stored increase.
+- When using the linear hash index (`index.LinearHashIndexType`), even though it will grow the hash table to reduce collisions, it comes at the cost of extra locking. Every read/write/delete needs to do extra locking to ensure that the index is not being grown while the read/write is going because that can cause corruption of data. Therefore, this will get slower if there are too many processes/goroutines writing data at the same time.
 
 
 ### Using the shell
@@ -108,7 +103,7 @@ Brickdb may be a reference to the verb [brick](https://en.wikipedia.org/wiki/Bri
 
 ### Future Work
 Following are the list of things I've in mind to implement in near future
-- **Linear Hashing** - Replace the fixed size hash index with a [linear hash index](https://en.wikipedia.org/wiki/Linear_hashing)
+- ~~**Linear Hashing** - Replace the fixed size hash index with a [linear hash index](https://en.wikipedia.org/wiki/Linear_hashing)~~ (Done)
 - **Support for multiple columns** - right now only a single string value can be stored for a key, but can we extend the storage format to support storing multiple column values for a given key, the way it is in most of the RDBMS and columnar databases.
 - **Support for more datatypes** - Right now key and values are expected to be strings, can we support more types natively?
 - **Support for multiple tables per database** - Right now one database is a flat store of key-values, can we provide an abstraction layer and support multple tables
