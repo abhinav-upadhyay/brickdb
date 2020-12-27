@@ -1,5 +1,5 @@
 .vscode/*
 *.dat
 *.idx
-shell
+./shell
          
