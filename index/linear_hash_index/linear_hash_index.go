@@ -56,7 +56,7 @@ const (
 	sep_str             = ":"
 	ptr_sz              = 7                                //size of ptr field in hash chain
 	ptr_max             = 9999999                          // max file offset = 10 ** PTR_SZ - 1
-	hashtable_size      = 2                                //initial hash table size
+	hashtable_size      = 1024                             //initial hash table size
 	free_off            = idx_header_off + idx_header_size //free list offset in index file
 	hash_off            = free_off + ptr_sz                //hash table offset in index file
 	idxlen_min          = 6
@@ -105,7 +105,7 @@ func (self *LinearHashIndex) Open(name string, mode int) error {
 	self.hashoff = hash_off
 	self.name = name
 	self.nrecords = 0
-	self.i = 1
+	self.i = 10
 	self.s = 0
 	var err error
 	self.idxFile, err = os.OpenFile(self.name+".idx", mode, 0644)
@@ -771,7 +771,7 @@ func (self *LinearHashIndex) Insert(key string, value string) error {
 }
 
 func (self *LinearHashIndex) computeLoadFactor() float64 {
-	return float64(1.0 * self.nrecords / int64(1*self.nhash))
+	return float64(1.0 * self.nrecords / int64(30*self.nhash))
 }
 
 func getGID() uint64 {
