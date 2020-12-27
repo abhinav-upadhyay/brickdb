@@ -143,13 +143,7 @@ func (self *LinearHashIndex) Open(name string, mode int) error {
 		}
 
 		if idxFileInfo.Size() == 0 {
-			/**
-			 * We need to write the 256 byte index header first. Header is defined as:
-			 * number of buckets (4 bytes): split pointer (4 bytes): rest 0 bytes, reserved for future use
-			 */
-			header := fmt.Sprintf("%*d%*d%*d%*d", idxtype_sz, 1, nbuckets_sz, hashtable_size, split_pointer_sz, 0, nrecords_sz, 0)
-			header = header + "\n"
-			bytesWritten, err := self.idxFile.Write([]byte(header))
+			err = self.writeHeader()
 			if err != nil {
 				return err
 			}
@@ -160,7 +154,7 @@ func (self *LinearHashIndex) Open(name string, mode int) error {
 			hashPointer = strings.Repeat(hashPointer, hashtable_size+1)
 			// hashPointer = hashPointer + "\n"
 			bytes := []byte(hashPointer)
-			bytesWritten, err = self.idxFile.Write(bytes)
+			bytesWritten, err := self.idxFile.Write(bytes)
 			if err != nil {
 				return errors.New("Write to index file failed")
 			}
@@ -550,6 +544,10 @@ func (self *LinearHashIndex) updateHeader(nrecordsChange int64, nhashChange uint
 }
 
 func (self *LinearHashIndex) writeHeader() error {
+	/**
+	 * We need to write the 256 byte index header first. Header is defined as:
+	 * number of buckets (4 bytes): split pointer (4 bytes): rest 0 bytes, reserved for future use
+	 */
 	header := fmt.Sprintf("%*d%*d%*d%*d\n", idxtype_sz, 1, nbuckets_sz, self.nhash, split_pointer_sz, self.s, nrecords_sz, self.nrecords)
 	if self.debug {
 		fmt.Printf("[%d] writing header %s", getGID(), header)
