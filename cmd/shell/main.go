@@ -61,11 +61,10 @@ func openDB(name string) *brickdb.Brickdb {
 	if exists {
 		exists = !finfo.IsDir()
 	}
-	db := brickdb.New(name)
-	if exists {
-		db.Open(os.O_RDWR)
-	} else {
-		db.Create(index.HashIndexType)
+	db := brickdb.New(name, index.LinearHashIndexType)
+	err = db.Open()
+	if err != nil {
+		panic(err)
 	}
 	return db
 }
