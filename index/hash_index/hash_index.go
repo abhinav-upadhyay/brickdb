@@ -40,18 +40,21 @@ import (
 )
 
 const (
-	IDXLEN_SZ      = 4 //index record length
-	SEP            = ':'
-	SEP_STR        = ":"
-	PTR_SZ         = 7       //size of ptr field in hash chain
-	PTR_MAX        = 9999999 // max file offset = 10 ** PTR_SZ - 1
-	HASHTABLE_SIZE = 137     //hash table size
-	FREE_OFF       = 0       //free list offset in index file
-	HASH_OFF       = PTR_SZ  //hash table offset in index file
-	IDXLEN_MIN     = 6
-	IDXLEN_MAX     = 1024
-	DATLEN_MIN     = 2
-	DATLEN_MAX     = 1024
+	idx_header_off  = 0
+	idx_header_size = 4 // idxtype(1)
+	idxtype_sz      = 3 //one byte
+	IDXLEN_SZ       = 4 //index record length
+	SEP             = ':'
+	SEP_STR         = ":"
+	PTR_SZ          = 7                                //size of ptr field in hash chain
+	PTR_MAX         = 9999999                          // max file offset = 10 ** PTR_SZ - 1
+	HASHTABLE_SIZE  = 137                              //hash table size
+	FREE_OFF        = idx_header_off + idx_header_size //free list offset in index file
+	HASH_OFF        = FREE_OFF + PTR_SZ                //hash table offset in index file
+	IDXLEN_MIN      = 6
+	IDXLEN_MAX      = 1024
+	DATLEN_MIN      = 2
+	DATLEN_MAX      = 1024
 )
 
 type indexStoreOp int
@@ -113,6 +116,7 @@ func (self *HashIndex) Open(name string, mode int) error {
 		}
 
 		if idxFileInfo.Size() == 0 {
+			self.writeHeader()
 			/**
 			 * We have to build a chain NHASH_DEF + 1 hash chain pointers
 			 */
@@ -132,6 +136,17 @@ func (self *HashIndex) Open(name string, mode int) error {
 	}
 	self.Rewind()
 	return nil
+}
+
+func (self *HashIndex) writeHeader() error {
+	/**
+	 * We need to write the 256 byte index header first. Header is defined as:
+	 * number of buckets (4 bytes): split pointer (4 bytes): rest 0 bytes, reserved for future use
+	 */
+	header := fmt.Sprintf("%*d\n", idxtype_sz, 0)
+	_, err := self.idxFile.Seek(idx_header_off, io.SeekStart)
+	_, err = self.idxFile.Write([]byte(header))
+	return err
 }
 
 func (self *HashIndex) Close() error {
