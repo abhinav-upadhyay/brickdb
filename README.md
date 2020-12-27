@@ -17,7 +17,10 @@ A simple concurrent hash index based key-value store in go. It is very much insp
 *Create/Open database*
 (following will create the database with given name if one doesn't exist already, or open the existing one)
 ```go
-	db := brickdb.New(name, index.LinearHashIndexType) // the index type is index.HashIndexType which is static hash table
+	// second parameter is index type, two types are available:
+	// index.HashIndexType which is a static hash table and
+	// second is index.LinearHashIndex which is a dynamic hash table using linear hashing
+	db := brickdb.New(name, index.LinearHashIndexType)
 	err := db.Open()
 ```
 
