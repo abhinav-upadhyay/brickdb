@@ -33,7 +33,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cespare/xxhash"
+	"github.com/OneOfOne/xxhash"
 	"golang.org/x/sys/unix"
 )
 
@@ -270,7 +270,9 @@ func (self *HashIndex) findAndLock(key string, isWriteLock bool) (bool, error) {
 }
 
 func (self *HashIndex) dbHash(key string) uint64 {
-	return xxhash.Sum64([]byte(key)) % uint64(self.nhash)
+	hasher := xxhash.NewS64(42)
+	hasher.WriteString(key)
+	return hasher.Sum64() % uint64(self.nhash)
 }
 
 /**
