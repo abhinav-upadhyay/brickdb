@@ -3,11 +3,11 @@ A simple concurrent hash index based key-value store in go. It is very much insp
 
 
 ### Features and Limitations
-- Concurrent - It uses byte-range locking to allow multiple readers and writers at the same time to the database
-- Embeddable - Instead of a stand-alone process, this is an embeddable database library with persistence to disk
-- Supported index types - Currently only hash based indexing is supported. There are two hash index implementations, one is a static hash table in which the index is initialized with a fixed size. As more and more keys are stored, the table will get slower due to increased collision. The second implementation is a dynamic hash index using linear hashing, it dynamically grows the table as collisions increase. But it can get slow if there are two many processes/threads writing at the same time due to increased lock contention.
-- Ordered Access - Since the only supported index format is hash table based, there is no mechanism to access the keys in sorted order.
-- Query Engine - There is no query engine implemented yet. There are functions available in the library to query data though.
+- **Concurrent** - It uses byte-range locking to allow multiple readers and writers at the same time to the database
+- **Embeddable** - Instead of a stand-alone process, this is an embeddable database library with persistence to disk
+- **Supported index types** - Currently only hash based indexing is supported. There are two hash index implementations, one is a static hash table in which the index is initialized with a fixed size. As more and more keys are stored, the table will get slower due to increased collision. The second implementation is a dynamic hash index using linear hashing, it dynamically grows the table as collisions increase. But it can get slow if there are two many processes/threads writing at the same time due to increased lock contention.
+- **Ordered Access** - Since the only supported index format is hash table based, there is no mechanism to access the keys in sorted order.
+- **Query Engine** - There is no query engine implemented yet. There are functions available in the library to query data though.
 
 ### Usage
 
