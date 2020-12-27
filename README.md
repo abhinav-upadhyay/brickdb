@@ -9,6 +9,9 @@ A simple concurrent hash index based key-value store in go. It is very much insp
 - **Ordered Access** - Since the only supported index format is hash table based, there is no mechanism to access the keys in sorted order.
 - **Query Engine** - There is no query engine implemented yet. There are functions available in the library to query data though.
 
+### Building the shell
+`go build ./cmd/shell`
+
 ### Usage
 
 *Create/Open database*
