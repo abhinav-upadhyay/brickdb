@@ -26,10 +26,27 @@
 
 package index
 
+import (
+	"strconv"
+	"strings"
+	"unicode/utf8"
+
+	"golang.org/x/sys/unix"
+)
+
 type IndexType int
 
 const (
-	HashIndexType IndexType = iota
+	HashIndexType       IndexType = 1
+	LinearHashIndexType IndexType = 2
+)
+
+type indexStoreOp int
+
+const (
+	insert indexStoreOp = iota
+	update
+	upsert
 )
 
 type BrickIndex interface {
@@ -41,4 +58,47 @@ type BrickIndex interface {
 	Insert(key string, value string) error
 	Update(key string, value string) error
 	Upsert(key string, value string) error
+}
+
+func parseInt(s string) (int64, error) {
+	return strconv.ParseInt(strings.TrimSpace(s), 10, 64)
+}
+
+func parseUint(s string) (uint64, error) {
+	return strconv.ParseUint(strings.TrimSpace(s), 10, 64)
+}
+
+func testNewLine(s string) bool {
+	buf := []byte(s)
+	lastRune, _ := utf8.DecodeLastRune(buf)
+	return lastRune == '\n'
+}
+
+func ReadLock(fd uintptr, offset int64, whence int16, len int64) error {
+	return getLock(fd, unix.F_OFD_SETLK, unix.F_RDLCK, offset, whence, len)
+}
+
+func ReadLockW(fd uintptr, offset int64, whence int16, len int64) error {
+	return getLock(fd, unix.F_OFD_SETLKW, unix.F_RDLCK, offset, whence, len)
+}
+
+func WriteLock(fd uintptr, offset int64, whence int16, len int64) error {
+	return getLock(fd, unix.F_OFD_SETLK, unix.F_WRLCK, offset, whence, len)
+}
+
+func WriteLockW(fd uintptr, offset int64, whence int16, len int64) error {
+	return getLock(fd, unix.F_OFD_SETLKW, unix.F_WRLCK, offset, whence, len)
+}
+
+func Unlock(fd uintptr, offset int64, whence int16, len int64) error {
+	return getLock(fd, unix.F_OFD_SETLK, unix.F_UNLCK, offset, whence, len)
+}
+
+func getLock(fd uintptr, cmd int, lockType int16, offset int64, whence int16, len int64) error {
+	var lock *unix.Flock_t = new(unix.Flock_t)
+	lock.Type = lockType
+	lock.Whence = whence
+	lock.Start = offset
+	lock.Len = len
+	return unix.FcntlFlock(fd, cmd, lock)
 }
