@@ -56,7 +56,7 @@ A simple concurrent hash index based key-value store in go. It is very much insp
 
 *Fetch all records*
 ```go
-	valuesMap, err := db.Fetch("key1")
+	valuesMap, err := db.FetchAll() //returns a map[string]string
 	if err != nil {
 		panic(err)
 	}
